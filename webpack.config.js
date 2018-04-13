@@ -1,6 +1,6 @@
 var config = {
     mode: 'none',
-    entry: './main.js',
+    entry: './app/main.js',
     resolve: {
         extensions: ['.js', '.jsx',]
     },
