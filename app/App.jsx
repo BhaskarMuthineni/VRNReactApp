@@ -8,7 +8,7 @@ import Master from '../master/Master.jsx';
 import Detail from '../detail/Detail.jsx';
 import Create from '../create/Create.jsx';
 
-const API = "http://localhost:5000/VRNMaster";
+const API = "http://" + window.location.hostname + ":5000/VRNMaster";
 
 const drawerWidth = 300;
 
