@@ -9,10 +9,7 @@ import { FormLabel, FormControl, FormControlLabel, FormHelperText } from 'materi
 import { MenuItem } from 'material-ui/Menu';
 import Input, { InputLabel } from 'material-ui/Input';
 import Tabs, { Tab } from 'material-ui/Tabs';
-import ExpansionPanel, {
-    ExpansionPanelSummary,
-    ExpansionPanelDetails,
-  } from 'material-ui/ExpansionPanel';
+import ExpansionPanel, {ExpansionPanelSummary, ExpansionPanelDetails } from 'material-ui/ExpansionPanel';
 import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 import TextField from 'material-ui/TextField';
 import Radio, { RadioGroup } from 'material-ui/Radio';
@@ -22,13 +19,13 @@ const API = "http://localhost:5000/VRNDetail/";
 class Detail extends Component {
     constructor(props) {
         super(props);
-        // fetch(API + this.props.match.params.id)
-        // .then(response => response.json())
-        // .then(data => this.props.data);
-    }
-    
+    }    
+
     render() {
         const { classes, theme } = this.props;
+        const vrnData = this.props.masterData.filter((ele) => {
+            return (ele.VRN === parseInt(this.props.match.params.id));
+        });
 
         return (
             <div style={{ width: '100%' }}>
@@ -43,7 +40,7 @@ class Detail extends Component {
                     <MenuIcon />
                     </IconButton>
                     <Typography variant="title" color="inherit" noWrap>
-                        VRN Check-In
+                        VRN Check-In: {vrnData[0].VRN}
                     </Typography>
                 </Toolbar>
                 </AppBar>
@@ -51,13 +48,14 @@ class Detail extends Component {
                 <div className={classes.toolbar} />
                 <FormControl className={classes.formControl} disabled>
                     <InputLabel htmlFor="name-disabled">Mode of Transport</InputLabel>
-                    <Select value={'CA'} input={<Input name="name" id="name-disabled" />}>
+                    <Input value={vrnData[0].TrnsprtMode} name="name" id="name-disabled" />
+                    {/* <Select>
                         <MenuItem value={'CA'}>Courier Air</MenuItem>
                         <MenuItem value={'CR'}>Courier Road</MenuItem>
                         <MenuItem value={'HD'}>Hand Delivered</MenuItem>
                         <MenuItem value={'RB'}>Road Bike</MenuItem>
                         <MenuItem value={'RD'}>Road Truck</MenuItem>
-                    </Select>
+                    </Select> */}
                 </FormControl>
                 <AppBar position="static">
                     <Tabs value={this.props.tabValue} onChange={this.props.handleTabChange}>
@@ -79,7 +77,7 @@ class Detail extends Component {
                                     id="name"
                                     label="Vehicle Status"
                                     className={classes.textField}
-                                    value="Loaded"                                    
+                                    value={this.props.detailData[0].VEHICLESTATUS}
                                     margin="normal"
                                     disabled
                                     />
@@ -87,7 +85,7 @@ class Detail extends Component {
                                     id="name"
                                     label="Vehicle No."
                                     className={classes.textField}
-                                    value="MH01R1234"                                    
+                                    value={vrnData[0].VEHICLENUM}                                    
                                     margin="normal"
                                     disabled
                                     />
@@ -95,7 +93,7 @@ class Detail extends Component {
                                     id="name"
                                     label="Fleet Type"
                                     className={classes.textField}
-                                    value="Market Vehicle"                                    
+                                    value={vrnData[0].FLEETTYPE}
                                     margin="normal"
                                     disabled
                                     />
@@ -103,15 +101,15 @@ class Detail extends Component {
                                     id="name"
                                     label="Transporter/Agency Name"
                                     className={classes.textField}
-                                    value="Test Vendor"
+                                    value={vrnData[0].TRANSPORTER}
                                     margin="normal"
                                     disabled
                                     />
                                     <TextField
                                     id="name"
                                     label="Seal Condition"
-                                    className={classes.textField}
-                                    value="Intact"                                    
+                                    className={classes.textField}                         
+                                    value={detailData[0].SEALCONDITION}
                                     margin="normal"
                                     disabled
                                     />
@@ -119,7 +117,7 @@ class Detail extends Component {
                                     id="name"
                                     label="Seal No. 1"
                                     className={classes.textField}
-                                    value="1123"                                    
+                                    value={detailData[0].SEAL1}
                                     margin="normal"
                                     disabled
                                     />
@@ -127,7 +125,7 @@ class Detail extends Component {
                                     id="name"
                                     label="Seal No. 2"
                                     className={classes.textField}
-                                    value="123"                                    
+                                    value={detailData[0].SEAL2}
                                     margin="normal"
                                     disabled
                                     />
@@ -135,7 +133,7 @@ class Detail extends Component {
                                     id="name"
                                     label="No. of Boxes"
                                     className={classes.textField}
-                                    value="10"                                    
+                                    value={detailData[0].SEALCONDITION}
                                     margin="normal"
                                     disabled
                                     />
@@ -239,6 +237,18 @@ class Detail extends Component {
                 </main>
             </div>
         );        
+    }
+
+    componentDidMount() {
+        fetch(API + this.props.match.params.id)
+        .then(response => response.json())
+        .then(data => this.props.updateDetailData(data));
+    }
+
+    componentDidUpdate() {
+        fetch(API + this.props.match.params.id)
+        .then(response => response.json())
+        .then(data => this.props.updateDetailData(data));
     }
 }
 

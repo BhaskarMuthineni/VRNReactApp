@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Route, withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { withStyles } from 'material-ui/styles';
 import CircularProgress from 'material-ui/Progress/CircularProgress';
@@ -101,11 +101,13 @@ class App extends Component {
             mobileOpen: false,
             tabValue : 0,
             masterData: [],
+            detailData: [],
             isLoading: false,
             error: null
         };
         this.handleDrawerToggle = this.handleDrawerToggle.bind(this);
         this.handleTabChange = this.handleTabChange.bind(this);
+        this.updateDetailData = this.updateDetailData.bind(this);
     }
 
     handleDrawerToggle() {
@@ -116,6 +118,9 @@ class App extends Component {
         this.setState({ tabValue: value });
     }
 
+    updateDetailData(event, data) {
+        this.setState({ detailData: data });
+    }
     render() {
         const { classes, theme } = this.props;
         const loader = this.state.isLoading;
@@ -135,25 +140,19 @@ class App extends Component {
         );
         }
 
-        return (
-            // <Router>
+        return (          
+            <Router>
                 <div className={classes.root}>
-                  <Master classes={classes} theme={theme} handleDrawerToggle={this.handleDrawerToggle} mobileOpen={this.state.mobileOpen} masterData={this.state.masterData} />
-                  <Detail classes={classes} theme={theme} handleDrawerToggle={this.handleDrawerToggle} tabValue={this.state.tabValue} handleTabChange={this.handleTabChange} />
-                    {/* <Switch>
-                      <Route exact path='/' component={Master} />
-                      <Route exact path='/detail/:id' component={Detail} />
-                        {/* <Route exact path='/' render={(props) => <Master classes={classes} theme={theme} handleDrawerToggle={this.handleDrawerToggle} mobileOpen={this.state.mobileOpen} masterData={this.state.masterData} {...props} />} />
-                        <Route exact path='/detail/:id' render={(props) => <Detail classes={classes} theme={theme} handleDrawerToggle={this.handleDrawerToggle} tabValue={this.state.tabValue} handleTabChange={this.handleTabChange} masterData={this.state.masterData} {...props} />} />
-                        <Route exact path='/create' render={(props) => <Create />} />
-                    </Switch> */}
+                  <Route exact path='' render={(props) => <Master classes={classes} theme={theme} handleDrawerToggle={this.handleDrawerToggle} mobileOpen={this.state.mobileOpen} masterData={this.state.masterData} {...props} />} />
+                  <Route exact path='/detail/:id' render={(props) => <Detail classes={classes} theme={theme} handleDrawerToggle={this.handleDrawerToggle} tabValue={this.state.tabValue} handleTabChange={this.handleTabChange} masterData={this.state.masterData} detailData={this.state.detailData} updateDetailData={this.updateDetailData} {...props} />} />
+                  <Route exact path='/create' component={Create} />                    
                 </div>
-            // </Router>
+            </Router>
         );        
     }
 
     componentDidMount() {
-      this.setState({ isLoading: true });
+      this.setState({ isLoading: true });      
       fetch(API)
         .then(response => {
           if(response.ok) {
@@ -173,4 +172,4 @@ App.propTypes = {
     theme: PropTypes.object.isRequired,
 };
   
-export default withStyles(styles, { withTheme: true })(App);
+export default (withStyles(styles, { withTheme: true }))(App);
