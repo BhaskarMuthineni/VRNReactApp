@@ -71,6 +71,12 @@ const styles = theme => ({
   heading: {
     fontSize: theme.typography.pxToRem(15),
     fontWeight: theme.typography.fontWeightRegular,
+    flexBasis: '33.33%',
+    flexShrink: 0,
+  },
+  secondaryHeading: {
+    fontSize: theme.typography.pxToRem(15),
+    color: theme.palette.text.secondary,
   },
   container: {
     display: 'flex',
@@ -103,11 +109,36 @@ class App extends Component {
             masterData: [],
             detailData: [],
             isLoading: false,
-            error: null
+            error: null,
+            expanded: null,
+            controlsVisibility : {
+              vehStat 	  : { RD: true,  RB: false, HD: false,  CR: false, CA: false },
+              vehNo 	    : { RD: true,  RB: true,  HD: false,  CR: true,  CA: true  },
+              fleetType   : { RD: true,  RB: true,  HD: false,  CR: true,  CA: true  },
+              transName   : { RD: true,  RB: true,  HD: false,  CR: true,  CA: true  },
+              sealCond 	  : { RD: true,  RB: false, HD: false,  CR: false, CA: false },
+              seal1 	    : { RD: true,  RB: false, HD: false,  CR: false, CA: false },
+              seal2 	    : { RD: true,  RB: false, HD: false,  CR: false, CA: false },
+              licNo 	    : { RD: true,  RB: true,  HD: false,  CR: true,  CA: true  },
+              mobNo 	    : { RD: true,  RB: true,  HD: true,   CR: true,  CA: true  },
+              personName  : { RD: true,  RB: true,  HD: true,   CR: true,  CA: true  },
+              noOfBoxes   : { RD: true,  RB: false, HD: false,  CR: false, CA: false },
+              lrNo 		    : { RD: true,  RB: false, HD: false,  CR: true,  CA: true },
+              idProof 	  : { RD: false, RB: false, HD: true,   CR: false, CA: false },
+              outVehStat 	: { RD: true,  RB: true,  HD: false,  CR: true,  CA: true },  
+              outSealCond : { RD: true,  RB: false, HD: false,  CR: false, CA: false },
+              outNoOfBoxes: { RD: true,  RB: true,  HD: true,   CR: true,  CA: true },
+              podRemarks  : { RD: true,  RB: true,  HD: true,   CR: true,  CA: true }
+            },
+            outVehStatus: "",
+            podRemarks: ""
         };
         this.handleDrawerToggle = this.handleDrawerToggle.bind(this);
         this.handleTabChange = this.handleTabChange.bind(this);
         this.updateDetailData = this.updateDetailData.bind(this);
+        this.handleExpPanelChange = this.handleExpPanelChange.bind(this);
+        this.handleOutVehStat = this.handleOutVehStat.bind(this);
+        this.handlePODRemarks = this.handlePODRemarks.bind(this);
     }
 
     handleDrawerToggle() {
@@ -118,9 +149,25 @@ class App extends Component {
         this.setState({ tabValue: value });
     }
 
-    updateDetailData(event, data) {
+    updateDetailData(data) {
         this.setState({ detailData: data });
     }
+
+    handleExpPanelChange(panel){
+      var that = this;
+        return function(event, expanded) {
+          that.setState({ expanded : expanded ?  panel : false });
+      }
+    }
+
+    handleOutVehStat(event, value) {
+      this.setState({ outVehStatus: value});
+    }
+
+    handlePODRemarks(event, value) {
+      this.setState({ podRemarks: value });
+    }
+
     render() {
         const { classes, theme } = this.props;
         const loader = this.state.isLoading;
@@ -143,8 +190,39 @@ class App extends Component {
         return (          
             <Router>
                 <div className={classes.root}>
-                  <Route exact path='' render={(props) => <Master classes={classes} theme={theme} handleDrawerToggle={this.handleDrawerToggle} mobileOpen={this.state.mobileOpen} masterData={this.state.masterData} {...props} />} />
-                  <Route exact path='/detail/:id' render={(props) => <Detail classes={classes} theme={theme} handleDrawerToggle={this.handleDrawerToggle} tabValue={this.state.tabValue} handleTabChange={this.handleTabChange} masterData={this.state.masterData} detailData={this.state.detailData} updateDetailData={this.updateDetailData} {...props} />} />
+                  <Route 
+                  exact 
+                  path='' 
+                  render={
+                      (props) => <Master 
+                                  classes={classes} 
+                                  theme={theme} 
+                                  handleDrawerToggle={this.handleDrawerToggle} 
+                                  mobileOpen={this.state.mobileOpen} 
+                                  masterData={this.state.masterData} 
+                                  updateDetailData={this.updateDetailData} 
+                                  {...props} />} />
+                  <Route 
+                  exact 
+                  path='/detail/:id' 
+                  render={
+                      (props) => <Detail 
+                                  classes={classes} 
+                                  theme={theme} 
+                                  handleDrawerToggle={this.handleDrawerToggle} 
+                                  tabValue={this.state.tabValue} 
+                                  handleTabChange={this.handleTabChange} 
+                                  masterData={this.state.masterData} 
+                                  detailData={this.state.detailData} 
+                                  updateDetailData={this.updateDetailData} 
+                                  expanded={this.state.expanded} 
+                                  handleExpPanelChange={this.handleExpPanelChange} 
+                                  controlsVisibility={this.state.controlsVisibility} 
+                                  outVehStatus={this.state.outVehStatus}
+                                  handleOutVehStat={this.handleOutVehStat}
+                                  podRemarks={this.state.podRemarks}
+                                  handlePODRemarks={this.handlePODRemarks}
+                                  {...props} />} />
                   <Route exact path='/create' component={Create} />                    
                 </div>
             </Router>

@@ -15,6 +15,9 @@ import Button from 'material-ui/Button';
 import AddIcon from 'material-ui-icons/Add';
 import SearchIcon from 'material-ui-icons/Search';
 import { Link } from 'react-router-dom';
+
+const API = "http://localhost:5000/VRNDetail/";
+
 class Master extends Component {
     constructor(props) {
         super(props);
@@ -41,8 +44,11 @@ class Master extends Component {
                     {
                         this.props.masterData.map((vrn, i) =>
                             <ListItem key={i} button divider
-                                onClick={() => { 
-                                    this.props.history.push("/detail/" + vrn.VRN);                                    
+                                onClick={() => {                                    
+                                    this.props.history.push("/detail/" + vrn.VRN);
+                                    fetch(API + vrn.VRN)
+                                    .then(response => response.json())
+                                    .then(data => this.props.updateDetailData(data));
                                     } }>
                             <ListItemIcon>
                                 { vrn.MODEOFTRANSPORT === "CA" ? <FlightIcon /> : 
