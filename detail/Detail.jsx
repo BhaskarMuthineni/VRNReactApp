@@ -14,20 +14,90 @@ import ExpansionPanel, {ExpansionPanelSummary, ExpansionPanelDetails } from 'mat
 import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 import TextField from 'material-ui/TextField';
 import Radio, { RadioGroup } from 'material-ui/Radio';
-
+import MessageDialog from '../dialog/MessageDialog.jsx';
+import Snackbar from 'material-ui/Snackbar';
 
 class Detail extends Component {
     constructor(props) {
         super(props);
+        this.handleCheckIn = this.handleCheckIn.bind(this);
     }
 
+    handleCheckIn(vrn) {
+        var that = this;
+        return function(event) {
+            that.props.handleLoading(true);      
+            var fnResponse = function(data){
+                that.props.handleMsgDlgOpen(true);
+                that.props.handleMsgDlgValue(data.message);
+                that.props.handleLoading(false);
+            }
+            let path = "VRNCheckIN/";
+            that.props.handleAPICall(path + vrn, "PUT", fnResponse);
+        }
+    }
+
+    handleCheckOut(vrn) {
+        var that = this;
+        return function(event) {
+            if(that.props.tabValue !== 1){
+                that.props.handleTabChange(null, 1);
+            }
+            if(that.props.outVehStatus !== ""){
+                that.props.handleLoading(true);      
+                var fnResponse = function(data){
+                    console.log(data);
+                    that.props.handleMsgDlgOpen(true);
+                    that.props.handleMsgDlgValue(data.message);
+                    that.props.handleLoading(false);
+                }
+                let path = "VRNCheckOUT";
+                var data = {
+                    VEHICLESTATUS : that.props.outVehStatus,
+                    NUMOFBOXES : that.props.noOfBoxes,
+                    SEALCONDITION : that.props.sealCond,
+                    REMARKS : that.props.podRemarks,
+                    VRN: vrn
+                }
+                that.props.handleAPICall(path, "POST", fnResponse, data);
+            }
+            else{
+                that.props.handleSnkBarOpen(true);
+                that.props.handleSnkBarMsg("Select Vehicle Status");
+            }
+        }
+    }    
+
     render() {
-        const { classes, theme, detailData, expanded } = this.props;
+        const { classes, theme, detailData, expanded, isLoading, error} = this.props;
         const vrnData = this.props.masterData.filter((ele) => {
             return (ele.VRN == parseInt(this.props.match.params.id));
         });
 
         const visibility = this.props.controlsVisibility;
+
+        const dateTimeFormatter = new Intl.DateTimeFormat('en-GB', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: '2-digit',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric'
+        });
+
+        if(error) {
+            return (
+                <p>{error.message}</p>
+            );
+        }
+
+        if(isLoading){
+            return (
+            <Dialog className={classes.busyDialog} open={isLoading}>
+                <CircularProgress className={classes.progress} size={100} thickness={4} />
+            </Dialog>
+            );
+        }
 
         return (
             <div style={{ width: '100%' }}>
@@ -270,10 +340,12 @@ class Detail extends Component {
                                 {
                                     visibility["outVehStat"][vrnData[0].MODEOFTRANSPORT] &&
                                     <FormControl component="fieldset" required className={classes.formControl}>
+                                        <FormLabel component="legend">Vehicle Status</FormLabel>
                                         <RadioGroup aria-label="Vehicle Status" name="VehStat" className={classes.group} value={this.props.outVehStatus} onChange={this.props.handleOutVehStat}>
                                             <FormControlLabel value="L" control={<Radio />} label="Loaded"/>
                                             <FormControlLabel value="E" control={<Radio />} label="Empty"/>
                                         </RadioGroup>
+                                        <FormHelperText>Select an option</FormHelperText>
                                     </FormControl>
                                 }
                                 {
@@ -282,14 +354,16 @@ class Detail extends Component {
                                     id="noOfBoxes"
                                     label="No. of Boxes"
                                     className={classes.textField}
-                                    value=""                                    
+                                    value={this.props.noOfBoxes}
+                                    onChange={this.props.handleNoOfBoxes}
                                     margin="normal"
                                     />
                                 }
                                 {
                                     visibility["outSealCond"][vrnData[0].MODEOFTRANSPORT] && this.props.outVehStatus !== "E" &&
-                                    <FormControl component="fieldset" required className={classes.formControl}>
-                                        <RadioGroup aria-label="Seal Condition" name="SealCond" className={classes.group}>
+                                    <FormControl component="fieldset" className={classes.formControl}>
+                                        <FormLabel component="legend">Seal Condition</FormLabel>
+                                        <RadioGroup aria-label="Seal Condition" name="SealCond" className={classes.group} value={this.props.sealCond} onChange={this.props.handleSealCond}>
                                             <FormControlLabel value="I" control={<Radio />} label="Intact"/>
                                             <FormControlLabel value="D" control={<Radio />} label="Damaged"/>
                                             <FormControlLabel value="N" control={<Radio />} label="No Seal"/>
@@ -313,11 +387,7 @@ class Detail extends Component {
                                 id="reported"
                                 label="Reported"
                                 className={classes.textField}
-                                value={new Intl.DateTimeFormat('en-GB', { 
-                                    year: 'numeric', 
-                                    month: 'long', 
-                                    day: '2-digit' 
-                                }).format(detailData.length > 0 && detailData[0].VEHICLECHECKINDATE !== null ? detailData[0].VEHICLECHECKINDATE.$date : "")}
+                                value={dateTimeFormatter.format(detailData.length > 0 && detailData[0].VEHICLECHECKINDATE !== null ? detailData[0].VEHICLECHECKINDATE.$date : "")}
                                 margin="normal"
                                 readOnly
                                 />
@@ -325,11 +395,7 @@ class Detail extends Component {
                                 id="checkIn"
                                 label="Checked"
                                 className={classes.textField}
-                                value={new Intl.DateTimeFormat('en-GB', { 
-                                    year: 'numeric', 
-                                    month: 'long', 
-                                    day: '2-digit' 
-                                }).format(detailData.length > 0 && detailData[0].VEHICLESECURITYDATE !== null ? detailData[0].VEHICLESECURITYDATE.$date : "")}
+                                value={dateTimeFormatter.format(detailData.length > 0 && detailData[0].VEHICLESECURITYDATE !== null ? detailData[0].VEHICLESECURITYDATE.$date : "")}
                                 margin="normal"
                                 readOnly
                                 />
@@ -338,16 +404,38 @@ class Detail extends Component {
                     }
                     {
                         vrnData[0].VRNSTATUS == "R" &&
-                        <Button variant="raised" color="primary" className={classes.button}>
+                        <Button variant="raised" color="primary" className={classes.button} onClick={this.handleCheckIn(vrnData[0].VRN)}>
                             Check-In
                         </Button>
                     }
                     {
                         vrnData[0].VRNSTATUS == "C" &&
-                        <Button variant="raised" color="primary" className={classes.button}>
+                        <Button variant="raised" color="primary" className={classes.button} onClick={this.handleCheckOut(vrnData[0].VRN)}>
                             Check-Out
                         </Button>
-                    }                    
+                    }
+                    <MessageDialog
+                        classes={{
+                            paper: classes.dialog
+                        }}
+                        handleMsgDlgOpen={this.props.handleMsgDlgOpen}
+                        handleMsgDlgValue={this.props.handleMsgDlgValue}
+                        open={this.props.messageDialogOpen}
+                        value={this.props.messageDialogValue}
+                    />
+                    <Snackbar
+                        anchorOrigin={{
+                            vertical: 'bottom', 
+                            horizontal: 'center'
+                        }}
+                        open={this.props.snackBarOpen}
+                        onClose={() => this.props.handleSnkBarOpen(false)}
+                        //autoHideDuration={3000}
+                        SnackbarContentProps={{
+                            'aria-describedby': 'message-id'
+                        }}
+                        message={<span id="message-id">{this.props.snackBarMessage}</span>}
+                    />
                 </main>
             </div>
         );        

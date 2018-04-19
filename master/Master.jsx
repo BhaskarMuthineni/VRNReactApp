@@ -15,20 +15,47 @@ import Button from 'material-ui/Button';
 import AddIcon from 'material-ui-icons/Add';
 import SearchIcon from 'material-ui-icons/Search';
 import { Link } from 'react-router-dom';
-
-const API = "http://localhost:5000/VRNDetail/";
+import CheckCircleIcon from 'material-ui-icons/CheckCircle';
 
 class Master extends Component {
     constructor(props) {
         super(props);
+        this.handleListItemClick = this.handleListItemClick.bind(this);
     }
 
-    componentDidMount() {
-        
+    handleListItemClick(vrn) {
+        var that = this;
+        return function(event){
+            that.props.history.push("/detail/" + vrn);//for Routing to detail
+            that.props.handleTabChange(null,0);//for initially setting Arrival tab visible
+            var fnExpPanelChange = that.props.handleExpPanelChange((vrn.MODEOFTRANSPORT !== 'HD') ? 'panel1' : 'panel2');//for initially setting Vehicle panel visible
+            fnExpPanelChange(null, true);//calling the returned function
+            that.props.handleLoading(true);      
+            var fnResponse = function(data){
+                that.props.updateDetailData(data)
+                that.props.handleLoading(false);
+            }
+            let path = "VRNDetail/";
+            that.props.handleAPICall(path + vrn, "GET", fnResponse);
+        }
     }
 
     render() {
-        const { classes, theme } = this.props;
+        const { classes, theme, isLoading, error } = this.props;
+
+        if(error) {
+            return (
+                <p>{error.message}</p>
+            );
+        }
+
+        if(isLoading){
+            return (
+            <Dialog className={classes.busyDialog} open={isLoading}>
+                <CircularProgress className={classes.progress} size={100} thickness={4} />
+            </Dialog>
+            );
+        }
 
         const drawer = (
             <div>
@@ -43,21 +70,21 @@ class Master extends Component {
                 <List component="nav">
                     {
                         this.props.masterData.map((vrn, i) =>
-                            <ListItem key={i} button divider
-                                onClick={() => {                                    
-                                    this.props.history.push("/detail/" + vrn.VRN);
-                                    fetch(API + vrn.VRN)
-                                    .then(response => response.json())
-                                    .then(data => this.props.updateDetailData(data));
-                                    } }>
+                            <ListItem key={i} button divider onClick={this.handleListItemClick(vrn.VRN)}>
                             <ListItemIcon>
-                                { vrn.MODEOFTRANSPORT === "CA" ? <FlightIcon /> : 
-                                 (vrn.MODEOFTRANSPORT === "CR" ? <LocalTaxiIcon /> : 
-                                 (vrn.MODEOFTRANSPORT === "HD" ? <DirectionsWalkIcon /> :
-                                 (vrn.MODEOFTRANSPORT === "RB" ? <DirectionsBikeIcon /> :
-                                 (vrn.MODEOFTRANSPORT === "RD" ? <LocalShippingIcon /> : <WarningIcon />)))) }
+                                { vrn.MODEOFTRANSPORT === "CA" ? <FlightIcon color="primary" /> : 
+                                 (vrn.MODEOFTRANSPORT === "CR" ? <LocalTaxiIcon color="primary"/> : 
+                                 (vrn.MODEOFTRANSPORT === "HD" ? <DirectionsWalkIcon color="primary"/> :
+                                 (vrn.MODEOFTRANSPORT === "RB" ? <DirectionsBikeIcon color="primary"/> :
+                                 (vrn.MODEOFTRANSPORT === "RD" ? <LocalShippingIcon color="primary"/> : <WarningIcon color="primary"/>)))) }
                             </ListItemIcon>
                             <ListItemText primary={"VRN No.: " + vrn.VRN} secondary={(vrn.MODEOFTRANSPORT === "HD") ? ("Driver Name: " + vrn.DRIVERNAME) : ("Vehicle No.: " + vrn.VEHICLENUM)} />
+                            {
+                                vrn.VRNSTATUS === "C" &&
+                                <ListItemIcon className={classes.checkInIcon}>
+                                    <CheckCircleIcon color="primary" />
+                                </ListItemIcon>
+                            }                            
                             </ListItem>
                         )
                     }                    
