@@ -21,39 +21,36 @@ class Master extends Component {
     constructor(props) {
         super(props);
         this.handleListItemClick = this.handleListItemClick.bind(this);
+        this.handleSearch = this.handleSearch.bind(this);
     }
 
     handleListItemClick(vrn) {
         var that = this;
         return function(event){
-            that.props.history.push("/detail/" + vrn);//for Routing to detail
+            that.props.history.push("/detail/" + vrn.VRN);//for Routing to detail
             that.props.handleTabChange(null,0);//for initially setting Arrival tab visible
             var fnExpPanelChange = that.props.handleExpPanelChange((vrn.MODEOFTRANSPORT !== 'HD') ? 'panel1' : 'panel2');//for initially setting Vehicle panel visible
             fnExpPanelChange(null, true);//calling the returned function
             that.props.handleLoading(true);      
             var fnResponse = function(data){
-                that.props.updateDetailData(data)
+                that.props.updateDetailData(data);
                 that.props.handleLoading(false);
             }
             let path = "VRNDetail/";
-            that.props.handleAPICall(path + vrn, "GET", fnResponse);
+            that.props.handleAPICall(path + vrn.VRN, "GET", fnResponse);
         }
     }
 
+    handleSearch() {
+
+    }
+
     render() {
-        const { classes, theme, isLoading, error } = this.props;
+        const { classes, theme, error } = this.props;
 
         if(error) {
             return (
                 <p>{error.message}</p>
-            );
-        }
-
-        if(isLoading){
-            return (
-            <Dialog className={classes.busyDialog} open={isLoading}>
-                <CircularProgress className={classes.progress} size={100} thickness={4} />
-            </Dialog>
             );
         }
 
@@ -64,27 +61,29 @@ class Master extends Component {
                     <Typography variant="title" color="inherit" noWrap>
                         VRN List
                     </Typography>
-                    <SearchIcon className={classes.search}/>
+                    <Button variant="fab" mini color="primary" aria-label="search" onClick={this.handleSearch} className={classes.searchButton}>
+                        <SearchIcon/>
+                    </Button>
                 </Toolbar>
                 </AppBar>
                 <List component="nav">
                     {
                         this.props.masterData.map((vrn, i) =>
-                            <ListItem key={i} button divider onClick={this.handleListItemClick(vrn.VRN)}>
-                            <ListItemIcon>
-                                { vrn.MODEOFTRANSPORT === "CA" ? <FlightIcon color="primary" /> : 
-                                 (vrn.MODEOFTRANSPORT === "CR" ? <LocalTaxiIcon color="primary"/> : 
-                                 (vrn.MODEOFTRANSPORT === "HD" ? <DirectionsWalkIcon color="primary"/> :
-                                 (vrn.MODEOFTRANSPORT === "RB" ? <DirectionsBikeIcon color="primary"/> :
-                                 (vrn.MODEOFTRANSPORT === "RD" ? <LocalShippingIcon color="primary"/> : <WarningIcon color="primary"/>)))) }
-                            </ListItemIcon>
-                            <ListItemText primary={"VRN No.: " + vrn.VRN} secondary={(vrn.MODEOFTRANSPORT === "HD") ? ("Driver Name: " + vrn.DRIVERNAME) : ("Vehicle No.: " + vrn.VEHICLENUM)} />
-                            {
-                                vrn.VRNSTATUS === "C" &&
-                                <ListItemIcon className={classes.checkInIcon}>
-                                    <CheckCircleIcon color="primary" />
+                            <ListItem key={i} button divider onClick={this.handleListItemClick(vrn)}>
+                                <ListItemIcon>
+                                    { vrn.MODEOFTRANSPORT === "CA" ? <FlightIcon color="primary" /> : 
+                                    (vrn.MODEOFTRANSPORT === "CR" ? <LocalTaxiIcon color="primary"/> : 
+                                    (vrn.MODEOFTRANSPORT === "HD" ? <DirectionsWalkIcon color="primary"/> :
+                                    (vrn.MODEOFTRANSPORT === "RB" ? <DirectionsBikeIcon color="primary"/> :
+                                    (vrn.MODEOFTRANSPORT === "RD" ? <LocalShippingIcon color="primary"/> : <WarningIcon color="primary"/>)))) }
                                 </ListItemIcon>
-                            }                            
+                                <ListItemText primary={"VRN No.: " + vrn.VRN} secondary={(vrn.MODEOFTRANSPORT === "HD") ? ("Driver Name: " + vrn.DRIVERNAME) : ("Vehicle No.: " + vrn.VEHICLENUM)} />
+                                {
+                                    vrn.VRNSTATUS === "C" &&
+                                    <ListItemIcon className={classes.checkInIcon}>
+                                        <CheckCircleIcon color="primary" />
+                                    </ListItemIcon>
+                                }
                             </ListItem>
                         )
                     }                    
@@ -128,6 +127,24 @@ class Master extends Component {
                 </Hidden>
             </div>
         );        
+    }
+
+    componentDidMount(){        
+        if(this.props.masterData.length > 0){
+          //  this.firstItem.click();
+        //     this.props.history.push("/detail/" + this.props.masterData[0].VRN);//for Routing to detail
+        //     this.props.handleTabChange(null,0);//for initially setting Arrival tab visible
+        //     var fnExpPanelChange = this.props.handleExpPanelChange((this.props.masterData[0].MODEOFTRANSPORT !== 'HD') ? 'panel1' : 'panel2');//for initially setting Vehicle panel visible
+        //     fnExpPanelChange(null, true);//calling the returned function
+        //     this.props.handleLoading(true);
+        //     var that = this;
+        //     var fnResponse = function(data){
+        //         that.props.updateDetailData(data);
+        //         that.props.handleLoading(false);
+        //     }
+        //     let path = "VRNDetail/";
+        //     //this.props.handleAPICall(path + this.props.masterData[0].VRN, "GET", fnResponse);
+        }
     }
 }
 

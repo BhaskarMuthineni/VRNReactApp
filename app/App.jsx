@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import { BrowserRouter as Router, Route, withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { withStyles } from 'material-ui/styles';
-import CircularProgress from 'material-ui/Progress/CircularProgress';
-import Dialog from 'material-ui/Dialog';
 import Master from '../master/Master.jsx';
 import Detail from '../detail/Detail.jsx';
 import Create from '../create/Create.jsx';
+import BusyDialog from '../dialog/BusyDialog.jsx';
+import MessageDialog from '../dialog/MessageDialog.jsx';
 
 const APIUrl = "http://" + window.location.hostname + ":5000/";
 
@@ -57,9 +57,9 @@ const styles = theme => ({
     right: '10px',
     bottom: '10px'
   },
-  search: {
+  searchButton: {
       position: 'absolute',
-      right: '15px'
+      right: '10px'
   },
   formControl: {
     margin: theme.spacing.unit,
@@ -94,12 +94,12 @@ const styles = theme => ({
   },
   progress: {
     margin: theme.spacing.unit * 2,
-    position: 'absolute',
-    left: "500px",
-    top: "200px",
-    textAlign: 'center',
-    zIndex: 1000,
-    opacity: 1
+    // position: 'absolute',
+    // left: "500px",
+    // top: "200px",
+    // textAlign: 'center',
+    // zIndex: 1000,
+    // opacity: 1
   },
   busyDialog: {
     backgroundColor: 'transparent',
@@ -156,7 +156,10 @@ class App extends Component {
             messageDialogOpen: false,
             messageDialogValue: "",
             snackBarOpen: false,
-            snackBarMessage: ""
+            snackBarMessage: "",
+            modeOfTransport: "",
+            transportModes: [], 
+            activeStep: 0
         };
 
         this.handleAPICall = this.handleAPICall.bind(this);
@@ -173,6 +176,10 @@ class App extends Component {
         this.handleMsgDlgValue = this.handleMsgDlgValue.bind(this);
         this.handleSnkBarOpen = this.handleSnkBarOpen.bind(this);
         this.handleSnkBarMsg = this.handleSnkBarMsg.bind(this);
+        //Create methods
+        this.handleMOTChange = this.handleMOTChange.bind(this);
+        this.handleTransportModes = this.handleTransportModes.bind(this);
+        this.handleActiveStep = this.handleActiveStep.bind(this);
     }
 
     handleAPICall(path, method, fnResponse, data){
@@ -232,16 +239,16 @@ class App extends Component {
       }
     }
 
-    handleNoOfBoxes(event, value) {
-      this.setState({ noOfBoxes: value});
+    handleNoOfBoxes(event) {
+      this.setState({ noOfBoxes: event.target.value});
     }
 
     handleSealCond(event, value) {
       this.setState({ sealCond: value});
     }
 
-    handlePODRemarks(event, value) {
-      this.setState({ podRemarks: value });
+    handlePODRemarks(event) {
+      this.setState({ podRemarks: event.target.value });
     }
 
     handleMsgDlgOpen(open) {
@@ -260,6 +267,18 @@ class App extends Component {
       this.setState({ snackBarMessage: value });
     }
 
+    handleMOTChange(event){
+      this.setState({modeOfTransport: event.target.value});
+    }
+
+    handleTransportModes(data){
+      this.setState({transportModes: data});
+    }
+
+    handleActiveStep(step) {
+      this.setState({activeStep: step});
+    }
+
     render() {
         const { classes, theme } = this.props;
         const { isLoading, error } = this.state;
@@ -268,17 +287,10 @@ class App extends Component {
           return (
             <p>{error.message}</p>
           );
-        }
+        }        
 
-        if(isLoading){
         return (
-          // <Dialog className={classes.busyDialog} open={isLoading}>
-            <CircularProgress className={classes.progress} size={100} thickness={4} />
-          // </Dialog>
-        );
-        }
-
-        return (          
+          <div>
             <Router>
                 <div className={classes.root}>
                   <Route 
@@ -288,7 +300,6 @@ class App extends Component {
                       (props) => <Master 
                                   classes={classes} 
                                   theme={theme}
-                                  isLoading={this.state.isLoading}
                                   error={this.state.error}
                                   handleAPICall={this.handleAPICall}
                                   handleLoading={this.handleLoading}
@@ -300,13 +311,12 @@ class App extends Component {
                                   handleExpPanelChange={this.handleExpPanelChange}
                                   {...props} />} />
                   <Route 
-                  exact 
-                  path='/detail/:id' 
-                  render={
+                    exact 
+                    path='/detail/:id' 
+                    render={
                       (props) => <Detail 
                                   classes={classes} 
                                   theme={theme}
-                                  isLoading={this.state.isLoading}
                                   error={this.state.error}
                                   handleAPICall={this.handleAPICall}
                                   handleLoading={this.handleLoading}
@@ -335,10 +345,42 @@ class App extends Component {
                                   handleSnkBarOpen={this.handleSnkBarOpen}
                                   snackBarMessage={this.state.snackBarMessage}
                                   handleSnkBarMsg={this.handleSnkBarMsg}
-                                  {...props} />} />
-                  <Route exact path='/create' component={Create} />                    
+                                  {...props} 
+                                  />} 
+                  />
+                  <Route
+                    exact
+                    path='/create'
+                    render={
+                      props => <Create
+                                classes={classes}
+                                theme={theme}
+                                error={this.state.error}
+                                handleAPICall={this.handleAPICall}
+                                handleLoading={this.handleLoading}
+                                handleDrawerToggle={this.handleDrawerToggle}
+                                modeOfTransport={this.state.modeOfTransport}
+                                transportModes={this.state.transportModes}
+                                handleTransportModes={this.handleTransportModes}
+                                handleMOTChange={this.handleMOTChange}
+                                activeStep={this.state.activeStep}
+                                handleActiveStep={this.handleActiveStep}
+                                {...props}
+                                />} 
+                  />
                 </div>
             </Router>
+            <BusyDialog classes={classes} isLoading={this.state.isLoading} />
+            <MessageDialog
+              classes={{
+                  paper: classes.dialog
+              }}
+              handleMsgDlgOpen={this.handleMsgDlgOpen}
+              handleMsgDlgValue={this.handleMsgDlgValue}
+              open={this.state.messageDialogOpen}
+              value={this.state.messageDialogValue}
+            />
+          </div>
         );        
     }
 
@@ -346,7 +388,7 @@ class App extends Component {
       let that = this;
       this.handleLoading(true);      
       var fnResponse = function(data){
-        that.setState({masterData: data.sort(function(a, b){return b.VRN - a.VRN})});
+        that.setState({masterData: data.sort(function(a, b){return b.VRN - a.VRN})});        
         that.handleLoading(false);
       }
       let path = "VRNMaster";

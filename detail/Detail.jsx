@@ -7,14 +7,12 @@ import Button from 'material-ui/Button';
 import Select from 'material-ui/Select';
 import MenuIcon from 'material-ui-icons/Menu';
 import { FormLabel, FormControl, FormControlLabel, FormHelperText } from 'material-ui/Form';
-import { MenuItem } from 'material-ui/Menu';
 import Input, { InputLabel } from 'material-ui/Input';
 import Tabs, { Tab } from 'material-ui/Tabs';
 import ExpansionPanel, {ExpansionPanelSummary, ExpansionPanelDetails } from 'material-ui/ExpansionPanel';
 import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 import TextField from 'material-ui/TextField';
 import Radio, { RadioGroup } from 'material-ui/Radio';
-import MessageDialog from '../dialog/MessageDialog.jsx';
 import Snackbar from 'material-ui/Snackbar';
 
 class Detail extends Component {
@@ -43,7 +41,11 @@ class Detail extends Component {
             if(that.props.tabValue !== 1){
                 that.props.handleTabChange(null, 1);
             }
-            if(that.props.outVehStatus !== ""){
+            if(that.props.controlsVisibility["outVehStat"][vrn.MODEOFTRANSPORT] && that.props.outVehStatus === ""){
+                that.props.handleSnkBarOpen(true);
+                that.props.handleSnkBarMsg("Select Vehicle Status");
+            }
+            else{
                 that.props.handleLoading(true);      
                 var fnResponse = function(data){
                     console.log(data);
@@ -57,19 +59,15 @@ class Detail extends Component {
                     NUMOFBOXES : that.props.noOfBoxes,
                     SEALCONDITION : that.props.sealCond,
                     REMARKS : that.props.podRemarks,
-                    VRN: vrn
+                    VRN: vrn.VRN
                 }
                 that.props.handleAPICall(path, "POST", fnResponse, data);
-            }
-            else{
-                that.props.handleSnkBarOpen(true);
-                that.props.handleSnkBarMsg("Select Vehicle Status");
             }
         }
     }    
 
     render() {
-        const { classes, theme, detailData, expanded, isLoading, error} = this.props;
+        const { classes, theme, detailData, expanded, error} = this.props;
         const vrnData = this.props.masterData.filter((ele) => {
             return (ele.VRN == parseInt(this.props.match.params.id));
         });
@@ -88,14 +86,6 @@ class Detail extends Component {
         if(error) {
             return (
                 <p>{error.message}</p>
-            );
-        }
-
-        if(isLoading){
-            return (
-            <Dialog className={classes.busyDialog} open={isLoading}>
-                <CircularProgress className={classes.progress} size={100} thickness={4} />
-            </Dialog>
             );
         }
 
@@ -345,7 +335,7 @@ class Detail extends Component {
                                             <FormControlLabel value="L" control={<Radio />} label="Loaded"/>
                                             <FormControlLabel value="E" control={<Radio />} label="Empty"/>
                                         </RadioGroup>
-                                        <FormHelperText>Select an option</FormHelperText>
+                                        {/* <FormHelperText>Select an option</FormHelperText> */}
                                     </FormControl>
                                 }
                                 {
@@ -410,19 +400,11 @@ class Detail extends Component {
                     }
                     {
                         vrnData[0].VRNSTATUS == "C" &&
-                        <Button variant="raised" color="primary" className={classes.button} onClick={this.handleCheckOut(vrnData[0].VRN)}>
+                        <Button variant="raised" color="primary" className={classes.button} onClick={this.handleCheckOut(vrnData[0])}>
                             Check-Out
                         </Button>
                     }
-                    <MessageDialog
-                        classes={{
-                            paper: classes.dialog
-                        }}
-                        handleMsgDlgOpen={this.props.handleMsgDlgOpen}
-                        handleMsgDlgValue={this.props.handleMsgDlgValue}
-                        open={this.props.messageDialogOpen}
-                        value={this.props.messageDialogValue}
-                    />
+                    
                     <Snackbar
                         anchorOrigin={{
                             vertical: 'bottom', 
