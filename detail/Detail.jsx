@@ -48,7 +48,6 @@ class Detail extends Component {
             else{
                 that.props.handleLoading(true);      
                 var fnResponse = function(data){
-                    console.log(data);
                     that.props.handleMsgDlgOpen(true);
                     that.props.handleMsgDlgValue(data.message);
                     that.props.handleLoading(false);
@@ -56,9 +55,9 @@ class Detail extends Component {
                 let path = "VRNCheckOUT";
                 var data = {
                     VEHICLESTATUS : that.props.outVehStatus,
-                    NUMOFBOXES : that.props.noOfBoxes,
-                    SEALCONDITION : that.props.sealCond,
-                    REMARKS : that.props.podRemarks,
+                    NUMOFBOXES : that.props.outNoOfBoxes,
+                    SEALCONDITION : that.props.ouotSealCond,
+                    REMARKS : that.props.outPODRemarks,
                     VRN: vrn.VRN
                 }
                 that.props.handleAPICall(path, "POST", fnResponse, data);
@@ -344,8 +343,8 @@ class Detail extends Component {
                                     id="noOfBoxes"
                                     label="No. of Boxes"
                                     className={classes.textField}
-                                    value={this.props.noOfBoxes}
-                                    onChange={this.props.handleNoOfBoxes}
+                                    value={this.props.outNoOfBoxes}
+                                    onChange={this.props.handleOutNoOfBoxes}
                                     margin="normal"
                                     />
                                 }
@@ -353,7 +352,7 @@ class Detail extends Component {
                                     visibility["outSealCond"][vrnData[0].MODEOFTRANSPORT] && this.props.outVehStatus !== "E" &&
                                     <FormControl component="fieldset" className={classes.formControl}>
                                         <FormLabel component="legend">Seal Condition</FormLabel>
-                                        <RadioGroup aria-label="Seal Condition" name="SealCond" className={classes.group} value={this.props.sealCond} onChange={this.props.handleSealCond}>
+                                        <RadioGroup aria-label="Seal Condition" name="SealCond" className={classes.group} value={this.props.outSealCond} onChange={this.props.handleOutSealCond}>
                                             <FormControlLabel value="I" control={<Radio />} label="Intact"/>
                                             <FormControlLabel value="D" control={<Radio />} label="Damaged"/>
                                             <FormControlLabel value="N" control={<Radio />} label="No Seal"/>
@@ -366,11 +365,11 @@ class Detail extends Component {
                                     id="OutRemarks"
                                     label="POD/Out Remarks"
                                     className={classes.textField}
-                                    value={this.props.podRemarks}
+                                    value={this.props.outPODRemarks}
                                     margin="normal"
                                     multiline
                                     rowsMax="2"
-                                    onChange={this.props.handlePODRemarks}
+                                    onChange={this.props.handleOutPODRemarks}
                                     />
                                 }
                                 <TextField

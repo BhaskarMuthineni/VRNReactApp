@@ -16,12 +16,14 @@ import AddIcon from 'material-ui-icons/Add';
 import SearchIcon from 'material-ui-icons/Search';
 import { Link } from 'react-router-dom';
 import CheckCircleIcon from 'material-ui-icons/CheckCircle';
+import TextField from 'material-ui/TextField';
 
 class Master extends Component {
     constructor(props) {
         super(props);
         this.handleListItemClick = this.handleListItemClick.bind(this);
         this.handleSearch = this.handleSearch.bind(this);
+        this.handleSearchText = this.handleSearchText.bind(this);
     }
 
     handleListItemClick(vrn) {
@@ -31,7 +33,7 @@ class Master extends Component {
             that.props.handleTabChange(null,0);//for initially setting Arrival tab visible
             var fnExpPanelChange = that.props.handleExpPanelChange((vrn.MODEOFTRANSPORT !== 'HD') ? 'panel1' : 'panel2');//for initially setting Vehicle panel visible
             fnExpPanelChange(null, true);//calling the returned function
-            that.props.handleLoading(true);      
+            that.props.handleLoading(true);
             var fnResponse = function(data){
                 that.props.updateDetailData(data);
                 that.props.handleLoading(false);
@@ -41,8 +43,23 @@ class Master extends Component {
         }
     }
 
-    handleSearch() {
+    handleSearchText(event) {
+        var val = event.target.value.toLowerCase();
+        this.props.updateSearchText(val);
+        if(val === ""){
+            this.props.handleMasterData(this.props.tempMasterData);
+        }
+        else{
+            var data = this.props.masterData.filter(function(ele){
+                return (ele.VRN.toString().toLowerCase().indexOf(val) > -1) || (ele.VEHICLENUM.toLowerCase().indexOf(val) > -1);
+            });
+            this.props.handleMasterData(data);
+        }        
+    }
 
+    handleSearch() {
+        const { search } = this.props;
+        this.props.handleSearchVisible(!search);
     }
 
     render() {
@@ -57,10 +74,24 @@ class Master extends Component {
         const drawer = (
             <div>
                 <AppBar className={classes.masterAppBar}>
-                <Toolbar>                    
+                <Toolbar>
+                {
+                    !this.props.search &&
                     <Typography variant="title" color="inherit" noWrap>
                         VRN List
                     </Typography>
+                }
+                {
+                    this.props.search &&
+                    <TextField
+                    id="search"
+                    label="Search"
+                    className={classes.textField}
+                    value={this.props.searchText}
+                    onChange={this.handleSearchText}
+                    margin="normal"
+                    />
+                }
                     <Button variant="fab" mini color="primary" aria-label="search" onClick={this.handleSearch} className={classes.searchButton}>
                         <SearchIcon/>
                     </Button>
@@ -89,7 +120,7 @@ class Master extends Component {
                     }                    
                 </List>
                 <Link to={'/create'}>
-                    <Button variant="fab" color="primary" aria-label="add" className={classes.button}>
+                    <Button variant="fab" mini color="primary" aria-label="add" className={classes.button}>
                         <AddIcon />
                     </Button>
                 </Link>
@@ -132,7 +163,7 @@ class Master extends Component {
     componentDidMount(){        
         if(this.props.masterData.length > 0){
           //  this.firstItem.click();
-        //     this.props.history.push("/detail/" + this.props.masterData[0].VRN);//for Routing to detail
+            //this.props.history.push("/detail/" + this.props.masterData[0].VRN);//for Routing to detail
         //     this.props.handleTabChange(null,0);//for initially setting Arrival tab visible
         //     var fnExpPanelChange = this.props.handleExpPanelChange((this.props.masterData[0].MODEOFTRANSPORT !== 'HD') ? 'panel1' : 'panel2');//for initially setting Vehicle panel visible
         //     fnExpPanelChange(null, true);//calling the returned function
@@ -145,6 +176,13 @@ class Master extends Component {
         //     let path = "VRNDetail/";
         //     //this.props.handleAPICall(path + this.props.masterData[0].VRN, "GET", fnResponse);
         }
+    }
+
+    componentDidUpdate(){
+        if(this.props.masterData.length > 0){
+            // this.props.history.push("/detail/" + this.props.masterData[0].VRN);
+            // this.props.handleLoading(false);
+        }        
     }
 }
 

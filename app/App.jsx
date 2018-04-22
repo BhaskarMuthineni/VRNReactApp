@@ -50,12 +50,16 @@ const styles = theme => ({
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
     padding: theme.spacing.unit * 3,
+    height: "100%"
   },
   button: {
     margin: theme.spacing.unit,
     position: 'absolute',
     right: '10px',
     bottom: '10px'
+  },
+  stepperButton: {
+    margin: theme.spacing.unit
   },
   searchButton: {
       position: 'absolute',
@@ -124,9 +128,12 @@ class App extends Component {
         super(props);
         this.state = {
             mobileOpen: false,
-            tabValue : 0,
+            tabValue: 0,
+            tempMasterData: [],
             masterData: [],
             detailData: [],
+            searchVisible: false,
+            searchText: "",
             isLoading: false,
             error: null,
             expanded: null,
@@ -150,36 +157,92 @@ class App extends Component {
               podRemarks  : { RD: true,  RB: true,  HD: true,   CR: true,  CA: true }
             },
             outVehStatus: "",
-            noOfBoxes: "",
-            sealCond: "",
-            podRemarks: "",
+            outNoOfBoxes: "",
+            outSealCond: "",
+            outPODRemarks: "",
             messageDialogOpen: false,
             messageDialogValue: "",
             snackBarOpen: false,
             snackBarMessage: "",
-            modeOfTransport: "",
+            modeOfTransport: "RD",
             transportModes: [], 
-            activeStep: 0
+            activeStep: 0,
+            inVehStat: "",
+            inVehNo: "",
+            inFleetType: "",
+            inTransporter: "",
+            inSealCond: "",
+            inSeal1: "",
+            inSeal2: "",
+            inNoOfBoxes: "",
+            inLicNo: "",
+            inMobNo: "",
+            inDriverName: "",
+            inProofType: "",
+            inProofNo: "",
+            inLRNo: "",
+            inRemarks: ""
         };
 
+        this.handleMasterData = this.handleMasterData.bind(this);
+        this.handleTempMasterData = this.handleTempMasterData.bind(this);
+        this.handleSearchVisible = this.handleSearchVisible.bind(this);
+        this.updateSearchText = this.updateSearchText.bind(this);
         this.handleAPICall = this.handleAPICall.bind(this);
         this.handleLoading = this.handleLoading.bind(this);
         this.handleDrawerToggle = this.handleDrawerToggle.bind(this);
         this.handleTabChange = this.handleTabChange.bind(this);
         this.updateDetailData = this.updateDetailData.bind(this);
         this.handleExpPanelChange = this.handleExpPanelChange.bind(this);
+        //Departure
         this.handleOutVehStat = this.handleOutVehStat.bind(this);
-        this.handleNoOfBoxes = this.handleNoOfBoxes.bind(this);
-        this.handleSealCond = this.handleSealCond.bind(this);
-        this.handlePODRemarks = this.handlePODRemarks.bind(this);
+        this.handleOutNoOfBoxes = this.handleOutNoOfBoxes.bind(this);
+        this.handleOutSealCond = this.handleOutSealCond.bind(this);
+        this.handleOutPODRemarks = this.handleOutPODRemarks.bind(this);
+        //Message Dialog
         this.handleMsgDlgOpen = this.handleMsgDlgOpen.bind(this);
         this.handleMsgDlgValue = this.handleMsgDlgValue.bind(this);
+        //Snackbar
         this.handleSnkBarOpen = this.handleSnkBarOpen.bind(this);
         this.handleSnkBarMsg = this.handleSnkBarMsg.bind(this);
         //Create methods
         this.handleMOTChange = this.handleMOTChange.bind(this);
         this.handleTransportModes = this.handleTransportModes.bind(this);
         this.handleActiveStep = this.handleActiveStep.bind(this);
+        this.handleStepperNext = this.handleStepperNext.bind(this);
+        this.handleStepperBack = this.handleStepperBack.bind(this);
+
+        this.handleInVehStat = this.handleInVehStat.bind(this);
+        this.handleInVehNo = this.handleInVehNo.bind(this);
+        this.handleInFleetType = this.handleInFleetType.bind(this);
+        this.handleInTransporter = this.handleInTransporter.bind(this);
+        this.handleInSealCond = this.handleInSealCond.bind(this);
+        this.handleInSeal1 = this.handleInSeal1.bind(this);
+        this.handleInSeal2 = this.handleInSeal2.bind(this);
+        this.handleInNoOfBoxes = this.handleInNoOfBoxes.bind(this);
+        this.handleInLicNo = this.handleInLicNo.bind(this);
+        this.handleInMobNo = this.handleInMobNo.bind(this);
+        this.handleInDriverName = this.handleInDriverName.bind(this);
+        this.handleInProofType = this.handleInProofType.bind(this);
+        this.handleInProofNo = this.handleInProofNo.bind(this);
+        this.handleInLRNo = this.handleInLRNo.bind(this);
+        this.handleInRemarks = this.handleInRemarks.bind(this);
+    }
+
+    handleMasterData(data) {
+      this.setState({masterData: data});
+    }
+
+    handleTempMasterData(data) {
+      this.setState({tempMasterData: data});
+    }
+
+    handleSearchVisible(visible) {
+      this.setState({search: visible});
+    }
+
+    updateSearchText(value) {
+      this.setState({searchText: value});
     }
 
     handleAPICall(path, method, fnResponse, data){
@@ -233,22 +296,30 @@ class App extends Component {
       });
       if(value === "E") {
         this.setState({
-          noOfBoxes: "",
-          sealCond: ""
+          outNoOfBoxes: "",
+          outSealCond: ""
         });
       }
     }
 
-    handleNoOfBoxes(event) {
-      this.setState({ noOfBoxes: event.target.value});
+    handleOutNoOfBoxes(event) {
+      var val = event.target.value;
+      if(val.length <= 6){
+        if(/^[0-9]+$/.test(val)){
+          this.setState({ outNoOfBoxes: event.target.value});
+        }
+        else{
+          this.setState({ outNoOfBoxes: ""});
+        }
+      }      
     }
 
-    handleSealCond(event, value) {
-      this.setState({ sealCond: value});
+    handleOutSealCond(event, value) {
+      this.setState({ outSealCond: value});
     }
 
-    handlePODRemarks(event) {
-      this.setState({ podRemarks: event.target.value });
+    handleOutPODRemarks(event) {
+      this.setState({ outPODRemarks: event.target.value });
     }
 
     handleMsgDlgOpen(open) {
@@ -279,6 +350,84 @@ class App extends Component {
       this.setState({activeStep: step});
     }
 
+    handleStepperNext() {
+      const { activeStep } = this.state;
+      this.setState({activeStep: activeStep + 1});
+    }
+
+    handleStepperBack() {
+      const { activeStep } = this.state;
+      this.setState({activeStep: activeStep - 1});
+    }
+
+    handleInVehStat(event, value) {
+      this.setState({inVehStat: value});
+    }
+
+    handleInVehNo(event) {
+      var val = event.target.value;
+      if(val.length <= 10){
+        //if(/^[A-Z]{2}[0-9]{1,3}(?:[A-Z])?(?:[A-Z]*)?[0-9]{1,4}$/.test(val)){
+          this.setState({inVehNo: val});
+       // }
+       // else{
+      //    this.setState({inVehNo: ""});
+       // }
+      }      
+    }
+
+    handleInFleetType(event) {
+      this.setState({inFleetType: event.target.value});
+    }
+
+    handleInTransporter(event) {
+      this.setState({inTransporter: event.target.value});
+    }
+
+    handleInSealCond(event, value) {
+      this.setState({inSealCond: value});
+    }
+
+    handleInSeal1(event) {
+      this.setState({inSeal1: event.target.value});
+    }
+
+    handleInSeal2(event) {
+      this.setState({inSeal2: event.target.value});
+    }
+
+    handleInNoOfBoxes(event) {
+      this.setState({inNoOfBoxes: event.target.value});
+    }
+
+    handleInLicNo(event) {
+      this.setState({inLicNo: event.target.value});
+    }
+
+    handleInMobNo(event) {
+      this.setState({inMobNo: event.target.value});
+    }
+
+    handleInDriverName(event) {
+      this.setState({inDriverName: event.target.value});
+    }
+
+    handleInProofType(event) {
+      this.setState({inProofType: event.target.value});
+    }
+
+    handleInProofNo(event) {
+      this.setState({inProofNo: event.target.value});
+    }
+
+    handleInLRNo(event) {
+      this.setState({inLRNo: event.target.value});
+    }
+
+    handleInRemarks(event) {
+      this.setState({inRemarks: event.target.value});
+    }    
+
     render() {
         const { classes, theme } = this.props;
         const { isLoading, error } = this.state;
@@ -301,14 +450,21 @@ class App extends Component {
                                   classes={classes} 
                                   theme={theme}
                                   error={this.state.error}
+                                  handleMasterData={this.handleMasterData}
+                                  handleTempMasterData={this.handleTempMasterData}
                                   handleAPICall={this.handleAPICall}
                                   handleLoading={this.handleLoading}
                                   handleDrawerToggle={this.handleDrawerToggle} 
-                                  mobileOpen={this.state.mobileOpen} 
+                                  mobileOpen={this.state.mobileOpen}
+                                  tempMasterData={this.state.tempMasterData}  
                                   masterData={this.state.masterData} 
                                   updateDetailData={this.updateDetailData}
                                   handleTabChange={this.handleTabChange}
                                   handleExpPanelChange={this.handleExpPanelChange}
+                                  search={this.state.search}
+                                  handleSearchVisible={this.handleSearchVisible}
+                                  searchText={this.state.searchText}
+                                  updateSearchText={this.updateSearchText}
                                   {...props} />} />
                   <Route 
                     exact 
@@ -331,12 +487,12 @@ class App extends Component {
                                   controlsVisibility={this.state.controlsVisibility} 
                                   outVehStatus={this.state.outVehStatus}
                                   handleOutVehStat={this.handleOutVehStat}
-                                  noOfBoxes={this.state.noOfBoxes}                                  
-                                  handleNoOfBoxes={this.handleNoOfBoxes}
-                                  sealCond={this.state.sealCond}
-                                  handleSealCond={this.handleSealCond}
-                                  podRemarks={this.state.podRemarks}
-                                  handlePODRemarks={this.handlePODRemarks}
+                                  outNoOfBoxes={this.state.outNoOfBoxes}                                  
+                                  handleOutNoOfBoxes={this.handleOutNoOfBoxes}
+                                  outSealCond={this.state.outSealCond}
+                                  handleOutSealCond={this.handleOutSealCond}
+                                  outPODRemarks={this.state.outPODRemarks}
+                                  handleOutPODRemarks={this.handleOutPODRemarks}
                                   messageDialogOpen={this.state.messageDialogOpen}
                                   handleMsgDlgOpen={this.handleMsgDlgOpen}
                                   messageDialogValue={this.state.messageDialogValue}
@@ -356,6 +512,7 @@ class App extends Component {
                                 classes={classes}
                                 theme={theme}
                                 error={this.state.error}
+                                controlsVisibility={this.state.controlsVisibility}
                                 handleAPICall={this.handleAPICall}
                                 handleLoading={this.handleLoading}
                                 handleDrawerToggle={this.handleDrawerToggle}
@@ -365,6 +522,38 @@ class App extends Component {
                                 handleMOTChange={this.handleMOTChange}
                                 activeStep={this.state.activeStep}
                                 handleActiveStep={this.handleActiveStep}
+                                handleStepperNext={this.handleStepperNext}
+                                handleStepperBack={this.handleStepperBack}
+                                inVehStat={this.state.inVehStat}
+                                handleInVehStat={this.handleInVehStat}
+                                inVehNo={this.state.inVehNo}
+                                handleInVehNo={this.handleInVehNo}
+                                inFleetType={this.state.inFleetType}
+                                inTransporter={this.state.inTransporter}
+                                inSealCond={this.state.inSealCond}
+                                inSeal1={this.state.inSeal1}
+                                inSeal2={this.state.inSeal2}
+                                inNoOfBoxes={this.state.inNoOfBoxes}
+                                inLicNo={this.state.inLicNo}
+                                inMobNo={this.state.inMobNo}
+                                inDriverName={this.state.inDriverName}
+                                inProofType={this.state.inProofType}
+                                inProofNo={this.state.inProofNo}
+                                inLRNo={this.state.inLRNo}
+                                inRemarks={this.state.inRemarks}
+                                handleInFleetType={this.handleInFleetType}
+                                handleInTransporter={this.handleInTransporter}
+                                handleInSealCond={this.handleInSealCond}
+                                handleInSeal1={this.handleInSeal1}
+                                handleInSeal2={this.handleInSeal2}
+                                handleInNoOfBoxes={this.handleInNoOfBoxes}
+                                handleInLicNo={this.handleInLicNo}
+                                handleInMobNo={this.handleInMobNo}
+                                handleInDriverName={this.handleInDriverName}
+                                handleInProofType={this.handleInProofType}
+                                handleInProofNo={this.handleInProofNo}
+                                handleInLRNo={this.handleInLRNo}
+                                handleInRemarks={this.handleInRemarks}
                                 {...props}
                                 />} 
                   />
@@ -388,8 +577,10 @@ class App extends Component {
       let that = this;
       this.handleLoading(true);      
       var fnResponse = function(data){
-        that.setState({masterData: data.sort(function(a, b){return b.VRN - a.VRN})});        
+        var sortedData = data.sort(function(a, b){return b.VRN - a.VRN});
+        that.setState({masterData: sortedData, tempMasterData: sortedData});
         that.handleLoading(false);
+        //that.props.history.push("/detail/" + that.props.masterData[0].VRN);
       }
       let path = "VRNMaster";
       this.handleAPICall(path, "GET", fnResponse);
