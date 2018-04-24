@@ -29,17 +29,7 @@ class Master extends Component {
     handleListItemClick(vrn) {
         var that = this;
         return function(event){
-            that.props.history.push("/detail/" + vrn.VRN);//for Routing to detail
-            that.props.handleTabChange(null,0);//for initially setting Arrival tab visible
-            var fnExpPanelChange = that.props.handleExpPanelChange((vrn.MODEOFTRANSPORT !== 'HD') ? 'panel1' : 'panel2');//for initially setting Vehicle panel visible
-            fnExpPanelChange(null, true);//calling the returned function
-            that.props.handleLoading(true);
-            var fnResponse = function(data){
-                that.props.updateDetailData(data);
-                that.props.handleLoading(false);
-            }
-            let path = "VRNDetail/";
-            that.props.handleAPICall(path + vrn.VRN, "GET", fnResponse);
+            that.props.loadDetailData(vrn);
         }
     }
 
@@ -63,13 +53,7 @@ class Master extends Component {
     }
 
     render() {
-        const { classes, theme, error } = this.props;
-
-        if(error) {
-            return (
-                <p>{error.message}</p>
-            );
-        }
+        const { classes, theme } = this.props;
 
         const drawer = (
             <div>
@@ -158,32 +142,7 @@ class Master extends Component {
                 </Hidden>
             </div>
         );        
-    }
-
-    componentDidMount(){        
-        if(this.props.masterData.length > 0){
-          //  this.firstItem.click();
-            //this.props.history.push("/detail/" + this.props.masterData[0].VRN);//for Routing to detail
-        //     this.props.handleTabChange(null,0);//for initially setting Arrival tab visible
-        //     var fnExpPanelChange = this.props.handleExpPanelChange((this.props.masterData[0].MODEOFTRANSPORT !== 'HD') ? 'panel1' : 'panel2');//for initially setting Vehicle panel visible
-        //     fnExpPanelChange(null, true);//calling the returned function
-        //     this.props.handleLoading(true);
-        //     var that = this;
-        //     var fnResponse = function(data){
-        //         that.props.updateDetailData(data);
-        //         that.props.handleLoading(false);
-        //     }
-        //     let path = "VRNDetail/";
-        //     //this.props.handleAPICall(path + this.props.masterData[0].VRN, "GET", fnResponse);
-        }
-    }
-
-    componentDidUpdate(){
-        if(this.props.masterData.length > 0){
-            // this.props.history.push("/detail/" + this.props.masterData[0].VRN);
-            // this.props.handleLoading(false);
-        }        
-    }
+    }    
 }
 
 export default Master;

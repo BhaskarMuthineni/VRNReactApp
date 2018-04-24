@@ -2,18 +2,12 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Dialog, { DialogActions, DialogContent, DialogTitle } from 'material-ui/Dialog';
 import Button from 'material-ui/Button';
+import history from '../history';
 
 class MessageDialog extends Component {
     constructor(props) {
         super(props);
-        this.handleOk = this.handleOk.bind(this);
-    }
-
-    handleOk(){
-        //this.props.history.push("");
-        this.props.handleMsgDlgOpen(false);
-        this.props.handleMsgDlgValue("");
-    }
+    }    
 
     render() {
 
@@ -25,15 +19,19 @@ class MessageDialog extends Component {
                 aria-labelledby="confirmation-dialog-title"
                 open={this.props.open}>
                 <DialogTitle id="confirmation-dialog-title">
-                    Success
+                    {this.props.title}
                 </DialogTitle>
                 <DialogContent>
                     <h3>{this.props.value}</h3>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={this.handleOk} variant="raised" color="primary">
-                        Ok
-                    </Button>
+                {
+                    this.props.btns.map((btn, i) =>
+                        <Button key={i} onClick={btn.event} variant="raised" color="primary">
+                            {btn.text}
+                        </Button>
+                    )
+                }                    
                 </DialogActions>
             </Dialog>
         );        

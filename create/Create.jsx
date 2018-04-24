@@ -22,13 +22,11 @@ class Create extends Component {
         super(props);
         this.handleReportIn = this.handleReportIn.bind(this);
         this.handleCheckIn = this.handleCheckIn.bind(this);
-        this.postVRN = this.postVRN.bind(this);
     }
 
     handleReportIn() {
         // if(that.props.controlsVisibility["outVehStat"][vrn.MODEOFTRANSPORT] && that.props.outVehStatus === ""){
-        //     that.props.handleSnkBarOpen(true);
-        //     that.props.handleSnkBarMsg("Select Vehicle Status");
+        //     that.props.toggleSnackBar("Select Vehicle Status");
         // }
         // else{
             
@@ -40,42 +38,35 @@ class Create extends Component {
         this.postVRN(true);
     }
 
-    postVRN(checkIn) {
-            this.props.handleLoading(true);      
-            var fnResponse = function(data){
-                console.log(data);
-                this.props.handleMsgDlgOpen(true);
-                this.props.handleMsgDlgValue(data.message);
-                this.props.handleLoading(false);
-            }
-            let path = "VRNMaster";
-            var data = {
-                MODEOFTRANSPORT: this.props.modeOfTransport,
-                VEHICLESTATUS: this.props.inVehStat,
-                VEHICLENUM: this.props.inVehNo,
-                FLEETTYPE: this.props.inFleetType,
-                FLEETTYPECODE: this.props.inFleetType,
-                TRANSPORTER: this.props.inTransporter,
-                TRANSPORTERCODE: this.props.inTransporter,
-                SEALCONDITION: this.props.inSealCond,
-                SEAL1: this.props.inSeal1,
-                SEAL2: this.props.inSeal2,
-                NUMOFBOXES: this.props.inNoOfBoxes,
-                LICENSENUM: this.props.inLicNo,
-                DRIVERNUM: this.props.inMobNo,
-                DRIVERNAME: this.props.inDriverName,
-                IDPROOFTYPE: this.props.inProofType,
-                IDPROOFNUM: this.props.inProofNo,                
-                LRNUM: this.props.inLRNo,                
-                REMARKS: this.props.inRemarks,
-                VRNSTATUS: (checkIn) ? "C" : "R",
-                CHECKINOUT: "I"
-            };
-            this.props.handleAPICall(path, "POST", fnResponse, data);
+    postVRN(checkIn) {        
+        var data = {
+            MODEOFTRANSPORT: this.props.modeOfTransport,
+            VEHICLESTATUS: this.props.inVehStat,
+            VEHICLENUM: this.props.inVehNo,
+            FLEETTYPE: this.props.inFleetType,
+            FLEETTYPECODE: this.props.inFleetType,
+            TRANSPORTER: this.props.inTransporter,
+            TRANSPORTERCODE: this.props.inTransporter,
+            SEALCONDITION: this.props.inSealCond,
+            SEAL1: this.props.inSeal1,
+            SEAL2: this.props.inSeal2,
+            NUMOFBOXES: this.props.inNoOfBoxes,
+            LICENSENUM: this.props.inLicNo,
+            DRIVERNUM: this.props.inMobNo,
+            DRIVERNAME: this.props.inDriverName,
+            IDPROOFTYPE: this.props.inProofType,
+            IDPROOFNUM: this.props.inProofNo,                
+            LRNUM: this.props.inLRNo,                
+            REMARKS: this.props.inRemarks,
+            VRNSTATUS: (checkIn) ? "C" : "R",
+            CHECKINOUT: "I"
+        };
+        let path = "VRNMaster";
+        this.props.handleAPICall(path, "POST",  this.props.callBack, data);
     }
 
      render() {
-        const { classes, theme, error, activeStep, controlsVisibility, modeOfTransport} = this.props;
+        const { classes, theme, activeStep, controlsVisibility, modeOfTransport} = this.props;
 
         const steps = [];
         
@@ -84,12 +75,6 @@ class Create extends Component {
         }
         steps.push('Driver');
         steps.push('Done');
-
-        if(error) {
-            return (
-                <p>{error.message}</p>
-            );
-        }
 
          return(
             <div style={{ width: '100%' }}>
@@ -164,7 +149,8 @@ class Create extends Component {
                                     className={classes.textField}
                                     value={this.props.inVehNo}
                                     margin="normal"
-                                    onChange={this.props.handleInVehNo}
+                                    onChange={this.props.handleChangeInVehNo}
+                                    onBlur={this.props.handleBlurInVehNo}
                                     />
                                 }
                                 {
@@ -212,7 +198,7 @@ class Create extends Component {
                                     ///>
                                 }
                                 {
-                                    controlsVisibility["sealCond"][modeOfTransport] &&                                    
+                                    controlsVisibility["sealCond"][modeOfTransport] && this.props.inVehStat !== "E" &&
                                     <FormControl component="fieldset" className={classes.formControl}>
                                         <FormLabel component="legend">Seal Condition</FormLabel>
                                         <RadioGroup
@@ -228,7 +214,7 @@ class Create extends Component {
                                     </FormControl>
                                 }
                                 {
-                                    controlsVisibility["seal1"][modeOfTransport] &&
+                                    controlsVisibility["seal1"][modeOfTransport] && this.props.inVehStat !== "E" && this.props.inSealCond !== "N" &&
                                     <TextField
                                     id="seal1"
                                     label="Seal No. 1"
@@ -239,7 +225,7 @@ class Create extends Component {
                                     />
                                 }
                                 {
-                                    controlsVisibility["seal2"][modeOfTransport] &&
+                                    controlsVisibility["seal2"][modeOfTransport] && this.props.inVehStat !== "E" && this.props.inSealCond !== "N" &&
                                     <TextField
                                     id="seal2"
                                     label="Seal No. 2"
@@ -250,7 +236,7 @@ class Create extends Component {
                                     />
                                 }
                                 {
-                                    controlsVisibility["noOfBoxes"][modeOfTransport] &&
+                                    controlsVisibility["noOfBoxes"][modeOfTransport] && this.props.inVehStat !== "E" &&
                                     <TextField
                                     id="numBox"
                                     label="No. of Boxes"
@@ -387,11 +373,10 @@ class Create extends Component {
      }
 
      componentDidMount(){
-        let that = this;
-        this.props.handleLoading(true);      
+        let that = this;      
         var fnResponse = function(data){
           that.props.handleTransportModes(data);
-          that.props.handleLoading(false);
+          that.props.toggleLoader();
         }
         let path = "VRNParam/TrnsprtMode";
         this.props.handleAPICall(path, "GET", fnResponse);

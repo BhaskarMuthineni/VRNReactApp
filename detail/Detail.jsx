@@ -13,25 +13,17 @@ import ExpansionPanel, {ExpansionPanelSummary, ExpansionPanelDetails } from 'mat
 import ExpandMoreIcon from 'material-ui-icons/ExpandMore';
 import TextField from 'material-ui/TextField';
 import Radio, { RadioGroup } from 'material-ui/Radio';
-import Snackbar from 'material-ui/Snackbar';
 
 class Detail extends Component {
     constructor(props) {
         super(props);
-        this.handleCheckIn = this.handleCheckIn.bind(this);
-    }
+    }    
 
     handleCheckIn(vrn) {
         var that = this;
-        return function(event) {
-            that.props.handleLoading(true);      
-            var fnResponse = function(data){
-                that.props.handleMsgDlgOpen(true);
-                that.props.handleMsgDlgValue(data.message);
-                that.props.handleLoading(false);
-            }
+        return function(event) {           
             let path = "VRNCheckIN/";
-            that.props.handleAPICall(path + vrn, "PUT", fnResponse);
+            that.props.handleAPICall(path + vrn, "PUT", that.props.callBack);
         }
     }
 
@@ -42,17 +34,9 @@ class Detail extends Component {
                 that.props.handleTabChange(null, 1);
             }
             if(that.props.controlsVisibility["outVehStat"][vrn.MODEOFTRANSPORT] && that.props.outVehStatus === ""){
-                that.props.handleSnkBarOpen(true);
-                that.props.handleSnkBarMsg("Select Vehicle Status");
+                that.props.toggleSnackBar("Select Vehicle Status");
             }
-            else{
-                that.props.handleLoading(true);      
-                var fnResponse = function(data){
-                    that.props.handleMsgDlgOpen(true);
-                    that.props.handleMsgDlgValue(data.message);
-                    that.props.handleLoading(false);
-                }
-                let path = "VRNCheckOUT";
+            else{                
                 var data = {
                     VEHICLESTATUS : that.props.outVehStatus,
                     NUMOFBOXES : that.props.outNoOfBoxes,
@@ -60,13 +44,14 @@ class Detail extends Component {
                     REMARKS : that.props.outPODRemarks,
                     VRN: vrn.VRN
                 }
-                that.props.handleAPICall(path, "POST", fnResponse, data);
+                let path = "VRNCheckOUT";
+                that.props.handleAPICall(path, "POST",  that.props.callBack, data);
             }
         }
     }    
 
     render() {
-        const { classes, theme, detailData, expanded, error} = this.props;
+        const { classes, theme, detailData, expanded} = this.props;
         const vrnData = this.props.masterData.filter((ele) => {
             return (ele.VRN == parseInt(this.props.match.params.id));
         });
@@ -80,13 +65,7 @@ class Detail extends Component {
             hour: 'numeric',
             minute: 'numeric',
             second: 'numeric'
-        });
-
-        if(error) {
-            return (
-                <p>{error.message}</p>
-            );
-        }
+        });       
 
         return (
             <div style={{ width: '100%' }}>
@@ -376,7 +355,7 @@ class Detail extends Component {
                                 id="reported"
                                 label="Reported"
                                 className={classes.textField}
-                                value={dateTimeFormatter.format(detailData.length > 0 && detailData[0].VEHICLECHECKINDATE !== null ? detailData[0].VEHICLECHECKINDATE.$date : "")}
+                                value={dateTimeFormatter.format(detailData.length > 0 ? detailData[0].VEHICLESECURITYDATE : "")}
                                 margin="normal"
                                 readOnly
                                 />
@@ -384,7 +363,7 @@ class Detail extends Component {
                                 id="checkIn"
                                 label="Checked"
                                 className={classes.textField}
-                                value={dateTimeFormatter.format(detailData.length > 0 && detailData[0].VEHICLESECURITYDATE !== null ? detailData[0].VEHICLESECURITYDATE.$date : "")}
+                                value={dateTimeFormatter.format(detailData.length > 0 ? detailData[0].VEHICLECHECKINDATE : "")}
                                 margin="normal"
                                 readOnly
                                 />
@@ -403,24 +382,10 @@ class Detail extends Component {
                             Check-Out
                         </Button>
                     }
-                    
-                    <Snackbar
-                        anchorOrigin={{
-                            vertical: 'bottom', 
-                            horizontal: 'center'
-                        }}
-                        open={this.props.snackBarOpen}
-                        onClose={() => this.props.handleSnkBarOpen(false)}
-                        //autoHideDuration={3000}
-                        SnackbarContentProps={{
-                            'aria-describedby': 'message-id'
-                        }}
-                        message={<span id="message-id">{this.props.snackBarMessage}</span>}
-                    />
                 </main>
             </div>
         );        
-    }    
+    }
 }
 
 export default Detail;

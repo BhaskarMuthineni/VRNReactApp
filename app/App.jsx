@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { BrowserRouter as Router, Route, withRouter } from 'react-router-dom';
+import { Router, Route, withRouter } from 'react-router-dom';//BrowserRouter as 
 import PropTypes from 'prop-types';
 import { withStyles } from 'material-ui/styles';
 import Master from '../master/Master.jsx';
@@ -7,8 +7,10 @@ import Detail from '../detail/Detail.jsx';
 import Create from '../create/Create.jsx';
 import BusyDialog from '../dialog/BusyDialog.jsx';
 import MessageDialog from '../dialog/MessageDialog.jsx';
+import history from '../history';
+import Snackbar from 'material-ui/Snackbar';
 
-const APIUrl = "http://" + window.location.hostname + ":5000/";
+const APIUrl = "http://" + window.location.hostname + ":5000/";//"http://192.168.43.110:5000/";
 
 const drawerWidth = 300;
 
@@ -161,12 +163,14 @@ class App extends Component {
             outSealCond: "",
             outPODRemarks: "",
             messageDialogOpen: false,
+            messageDialogTitle: "",
             messageDialogValue: "",
+            messageDialogButtons: [],
             snackBarOpen: false,
-            snackBarMessage: "",
-            modeOfTransport: "RD",
-            transportModes: [], 
+            snackBarMessage: "",            
+            transportModes: [],
             activeStep: 0,
+            modeOfTransport: "",            
             inVehStat: "",
             inVehNo: "",
             inFleetType: "",
@@ -189,7 +193,9 @@ class App extends Component {
         this.handleSearchVisible = this.handleSearchVisible.bind(this);
         this.updateSearchText = this.updateSearchText.bind(this);
         this.handleAPICall = this.handleAPICall.bind(this);
-        this.handleLoading = this.handleLoading.bind(this);
+        this.loadMasterData = this.loadMasterData.bind(this);
+        this.loadDetailData = this.loadDetailData.bind(this);
+        this.toggleLoader = this.toggleLoader.bind(this);
         this.handleDrawerToggle = this.handleDrawerToggle.bind(this);
         this.handleTabChange = this.handleTabChange.bind(this);
         this.updateDetailData = this.updateDetailData.bind(this);
@@ -200,11 +206,9 @@ class App extends Component {
         this.handleOutSealCond = this.handleOutSealCond.bind(this);
         this.handleOutPODRemarks = this.handleOutPODRemarks.bind(this);
         //Message Dialog
-        this.handleMsgDlgOpen = this.handleMsgDlgOpen.bind(this);
-        this.handleMsgDlgValue = this.handleMsgDlgValue.bind(this);
+        this.handleMsgDlg = this.handleMsgDlg.bind(this);
         //Snackbar
-        this.handleSnkBarOpen = this.handleSnkBarOpen.bind(this);
-        this.handleSnkBarMsg = this.handleSnkBarMsg.bind(this);
+        this.toggleSnackBar = this.toggleSnackBar.bind(this);
         //Create methods
         this.handleMOTChange = this.handleMOTChange.bind(this);
         this.handleTransportModes = this.handleTransportModes.bind(this);
@@ -213,7 +217,8 @@ class App extends Component {
         this.handleStepperBack = this.handleStepperBack.bind(this);
 
         this.handleInVehStat = this.handleInVehStat.bind(this);
-        this.handleInVehNo = this.handleInVehNo.bind(this);
+        this.handleBlurInVehNo = this.handleBlurInVehNo.bind(this);        
+        this.handleChangeInVehNo = this.handleChangeInVehNo.bind(this);
         this.handleInFleetType = this.handleInFleetType.bind(this);
         this.handleInTransporter = this.handleInTransporter.bind(this);
         this.handleInSealCond = this.handleInSealCond.bind(this);
@@ -247,6 +252,7 @@ class App extends Component {
 
     handleAPICall(path, method, fnResponse, data){
       var payload = JSON.stringify(data);
+      this.toggleLoader();
       fetch(APIUrl + path, {
             method: method,
             headers: {
@@ -264,11 +270,56 @@ class App extends Component {
           }
         })
         .then(fnResponse)
-        .catch(error => this.setState({error, isLoading: false}));
+        .catch(error => {
+          this.setState({error, isLoading: false});
+          var btns = [{
+            text: 'Ok',
+            event: () => this.handleMsgDlg()
+          }]
+          this.handleMsgDlg("Error", error.message, btns);
+        })
     }
 
-    handleLoading(load) {
-      this.setState({ isLoading: load });
+    loadMasterData(){
+      let that = this;   
+      var fnResponse = function(data){
+        that.toggleLoader();
+        if(Array.isArray(data)){
+          var sortedData = data.sort(function(a, b){return b.VRN - a.VRN});
+          that.setState({masterData: sortedData, tempMasterData: sortedData});
+          that.loadDetailData(sortedData[0]);
+        }
+        else if(typeof data === "object" && data.message !== undefined){
+          var title = that.getTitle(data.msgCode);
+          var msg = data.message;
+          var btns = [{
+              text: "Ok",
+              event: () => that.handleMsgDlg()
+          }];
+          that.handleMsgDlg(title, msg, btns);          
+        }        
+      }
+      let path = "VRNMaster";
+      this.handleAPICall(path, "GET", fnResponse);
+    }
+
+    loadDetailData(vrn){
+      var that = this;
+      history.push("/detail/" + vrn.VRN);//for Routing to detail
+      this.handleTabChange(null,0);//for initially setting Arrival tab visible
+      var fnExpPanelChange = this.handleExpPanelChange((vrn.MODEOFTRANSPORT !== 'HD') ? 'panel1' : 'panel2');//for initially setting Vehicle panel visible
+      fnExpPanelChange(null, true);//calling the returned function
+      var fnDetailResponse = function(data){
+          that.updateDetailData(data);
+          that.toggleLoader();
+      }
+      let path = "VRNDetail/";
+      this.handleAPICall(path + vrn.VRN, "GET", fnDetailResponse);
+    }
+
+    toggleLoader() {
+      const { isLoading } = this.state;
+      this.setState({ isLoading: !isLoading });
     }
 
     handleDrawerToggle() {
@@ -280,7 +331,13 @@ class App extends Component {
     }
 
     updateDetailData(data) {
-        this.setState({ detailData: data });
+        this.setState({
+          detailData: data, 
+          outVehStatus: "",
+          outNoOfBoxes: "",
+          outSealCond: "",
+          outPODRemarks: ""
+        });
     }
 
     handleExpPanelChange(panel){
@@ -322,28 +379,53 @@ class App extends Component {
       this.setState({ outPODRemarks: event.target.value });
     }
 
-    handleMsgDlgOpen(open) {
-      this.setState({ messageDialogOpen: open });
-    }
+    handleMsgDlg(title, value, btns) {
+      const { messageDialogOpen } = this.state;
+      this.setState({ 
+        messageDialogOpen: !messageDialogOpen,
+        messageDialogTitle: title ? title : "",
+        messageDialogValue: value ? value : "",
+        messageDialogButtons: btns ? btns : []
+      });
+    }    
 
-    handleMsgDlgValue(value) {
-      this.setState({ messageDialogValue: value });
-    }
-
-    handleSnkBarOpen(open){
-      this.setState({ snackBarOpen: open });
-    }
-
-    handleSnkBarMsg(value){
-      this.setState({ snackBarMessage: value });
-    }
+    toggleSnackBar(msg){
+      const { snackBarOpen } = this.state;
+      this.setState({
+        snackBarOpen: !snackBarOpen,
+        snackBarMessage: (msg ? msg : "")
+      });
+    }    
 
     handleMOTChange(event){
-      this.setState({modeOfTransport: event.target.value});
+      var val = event.target.value;
+      this.setState({
+        modeOfTransport: val, 
+        inVehStat: (val === "RD") ? "L": "",
+        inSealCond: (val === "RD") ? "I": "",
+      });
     }
 
     handleTransportModes(data){
-      this.setState({transportModes: data});
+      this.setState({
+        transportModes: data,
+        modeOfTransport: "RD",
+        inVehStat: "L",
+        inVehNo: "",
+        inFleetType: "",
+        inTransporter: "",
+        inSealCond: "I",
+        inSeal1: "",
+        inSeal2: "",
+        inNoOfBoxes: "",
+        inLicNo: "",
+        inMobNo: "",
+        inDriverName: "",
+        inProofType: "",
+        inProofNo: "",
+        inLRNo: "",
+        inRemarks: ""
+      });
     }
 
     handleActiveStep(step) {
@@ -364,16 +446,21 @@ class App extends Component {
       this.setState({inVehStat: value});
     }
 
-    handleInVehNo(event) {
+    handleChangeInVehNo(event) {
       var val = event.target.value;
-      if(val.length <= 10){
-        //if(/^[A-Z]{2}[0-9]{1,3}(?:[A-Z])?(?:[A-Z]*)?[0-9]{1,4}$/.test(val)){
-          this.setState({inVehNo: val});
-       // }
-       // else{
-      //    this.setState({inVehNo: ""});
-       // }
-      }      
+      if(val.length <= 10){        
+        this.setState({inVehNo: val});
+      }
+    }
+
+    handleBlurInVehNo(event){
+      var val = this.state.inVehNo;      
+      if(/^[A-Z]{2}[0-9]{1,3}(?:[A-Z])?(?:[A-Z]*)?[0-9]{1,4}$/.test(val)){
+        //this.setState({inVehNo: val});
+      }
+      else{
+        this.setState({inVehNo: ""});
+      }
     }
 
     handleInFleetType(event) {
@@ -426,21 +513,37 @@ class App extends Component {
 
     handleInRemarks(event) {
       this.setState({inRemarks: event.target.value});
-    }    
+    }
+
+    getTitle(code){
+      switch(code) {
+        case "S": return "Success";
+        case "E": return "Error";
+        default: return "Warning";
+      }
+    }
+
+    callBack(data) {
+      var title = this.getTitle(data.msgCode);
+      var msg = data.message;
+      var btns = [{
+          text: "Ok",
+          event: () => {
+            history.push("");
+            this.loadMasterData();
+            this.handleMsgDlg();
+          }
+      }];
+      this.handleMsgDlg(title, msg, btns);
+      this.toggleLoader();
+    }
 
     render() {
-        const { classes, theme } = this.props;
-        const { isLoading, error } = this.state;
-
-        if(error) {
-          return (
-            <p>{error.message}</p>
-          );
-        }        
+        const { classes, theme } = this.props;      
 
         return (
           <div>
-            <Router>
+            <Router history={history}>
                 <div className={classes.root}>
                   <Route 
                   exact 
@@ -449,11 +552,11 @@ class App extends Component {
                       (props) => <Master 
                                   classes={classes} 
                                   theme={theme}
-                                  error={this.state.error}
                                   handleMasterData={this.handleMasterData}
                                   handleTempMasterData={this.handleTempMasterData}
                                   handleAPICall={this.handleAPICall}
-                                  handleLoading={this.handleLoading}
+                                  loadDetailData={this.loadDetailData}
+                                  toggleLoader={this.toggleLoader}
                                   handleDrawerToggle={this.handleDrawerToggle} 
                                   mobileOpen={this.state.mobileOpen}
                                   tempMasterData={this.state.tempMasterData}  
@@ -473,9 +576,9 @@ class App extends Component {
                       (props) => <Detail 
                                   classes={classes} 
                                   theme={theme}
-                                  error={this.state.error}
                                   handleAPICall={this.handleAPICall}
-                                  handleLoading={this.handleLoading}
+                                  loadMasterData={this.loadMasterData}
+                                  toggleLoader={this.toggleLoader}
                                   handleDrawerToggle={this.handleDrawerToggle} 
                                   tabValue={this.state.tabValue} 
                                   handleTabChange={this.handleTabChange} 
@@ -493,14 +596,9 @@ class App extends Component {
                                   handleOutSealCond={this.handleOutSealCond}
                                   outPODRemarks={this.state.outPODRemarks}
                                   handleOutPODRemarks={this.handleOutPODRemarks}
-                                  messageDialogOpen={this.state.messageDialogOpen}
-                                  handleMsgDlgOpen={this.handleMsgDlgOpen}
-                                  messageDialogValue={this.state.messageDialogValue}
-                                  handleMsgDlgValue={this.handleMsgDlgValue}
-                                  snackBarOpen={this.state.snackBarOpen}
-                                  handleSnkBarOpen={this.handleSnkBarOpen}
-                                  snackBarMessage={this.state.snackBarMessage}
-                                  handleSnkBarMsg={this.handleSnkBarMsg}
+                                  handleMsgDlg={this.handleMsgDlg}
+                                  toggleSnackBar={this.toggleSnackBar}
+                                  callBack={this.callBack}
                                   {...props} 
                                   />} 
                   />
@@ -511,11 +609,13 @@ class App extends Component {
                       props => <Create
                                 classes={classes}
                                 theme={theme}
-                                error={this.state.error}
                                 controlsVisibility={this.state.controlsVisibility}
                                 handleAPICall={this.handleAPICall}
-                                handleLoading={this.handleLoading}
+                                loadMasterData={this.loadMasterData}
+                                toggleLoader={this.toggleLoader}
                                 handleDrawerToggle={this.handleDrawerToggle}
+                                handleMsgDlg={this.handleMsgDlg}
+                                toggleSnackBar={this.toggleSnackBar}
                                 modeOfTransport={this.state.modeOfTransport}
                                 transportModes={this.state.transportModes}
                                 handleTransportModes={this.handleTransportModes}
@@ -524,10 +624,8 @@ class App extends Component {
                                 handleActiveStep={this.handleActiveStep}
                                 handleStepperNext={this.handleStepperNext}
                                 handleStepperBack={this.handleStepperBack}
-                                inVehStat={this.state.inVehStat}
-                                handleInVehStat={this.handleInVehStat}
-                                inVehNo={this.state.inVehNo}
-                                handleInVehNo={this.handleInVehNo}
+                                inVehStat={this.state.inVehStat}                                
+                                inVehNo={this.state.inVehNo}                                
                                 inFleetType={this.state.inFleetType}
                                 inTransporter={this.state.inTransporter}
                                 inSealCond={this.state.inSealCond}
@@ -541,6 +639,9 @@ class App extends Component {
                                 inProofNo={this.state.inProofNo}
                                 inLRNo={this.state.inLRNo}
                                 inRemarks={this.state.inRemarks}
+                                handleInVehStat={this.handleInVehStat}
+                                handleChangeInVehNo={this.handleChangeInVehNo}
+                                handleBlurInVehNo={this.handleBlurInVehNo}
                                 handleInFleetType={this.handleInFleetType}
                                 handleInTransporter={this.handleInTransporter}
                                 handleInSealCond={this.handleInSealCond}
@@ -553,7 +654,8 @@ class App extends Component {
                                 handleInProofType={this.handleInProofType}
                                 handleInProofNo={this.handleInProofNo}
                                 handleInLRNo={this.handleInLRNo}
-                                handleInRemarks={this.handleInRemarks}
+                                handleInRemarks={this.handleInRemarks} 
+                                callBack={this.callBack}
                                 {...props}
                                 />} 
                   />
@@ -564,26 +666,32 @@ class App extends Component {
               classes={{
                   paper: classes.dialog
               }}
-              handleMsgDlgOpen={this.handleMsgDlgOpen}
-              handleMsgDlgValue={this.handleMsgDlgValue}
+              handleMsgDlg={this.handleMsgDlg}              
               open={this.state.messageDialogOpen}
+              title={this.state.messageDialogTitle}
               value={this.state.messageDialogValue}
+              btns={this.state.messageDialogButtons}
+              loadMasterData={this.loadMasterData}
+            />
+            <Snackbar
+              anchorOrigin={{
+                  vertical: 'bottom', 
+                  horizontal: 'center'
+              }}
+              open={this.snackBarOpen}
+              onClose={() => this.toggleSnackBar()}
+              //autoHideDuration={3000}
+              SnackbarContentProps={{
+                  'aria-describedby': 'message-id'
+              }}
+              message={<span id="message-id">{this.snackBarMessage}</span>}
             />
           </div>
         );        
     }
 
     componentDidMount() {
-      let that = this;
-      this.handleLoading(true);      
-      var fnResponse = function(data){
-        var sortedData = data.sort(function(a, b){return b.VRN - a.VRN});
-        that.setState({masterData: sortedData, tempMasterData: sortedData});
-        that.handleLoading(false);
-        //that.props.history.push("/detail/" + that.props.masterData[0].VRN);
-      }
-      let path = "VRNMaster";
-      this.handleAPICall(path, "GET", fnResponse);
+      this.loadMasterData();
     }
 }
 
