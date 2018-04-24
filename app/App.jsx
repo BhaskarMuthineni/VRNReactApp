@@ -193,6 +193,7 @@ class App extends Component {
         this.handleSearchVisible = this.handleSearchVisible.bind(this);
         this.updateSearchText = this.updateSearchText.bind(this);
         this.handleAPICall = this.handleAPICall.bind(this);
+        this.callBack = this.callBack.bind(this);
         this.loadMasterData = this.loadMasterData.bind(this);
         this.loadDetailData = this.loadDetailData.bind(this);
         this.toggleLoader = this.toggleLoader.bind(this);

@@ -40,7 +40,7 @@ class Detail extends Component {
                 var data = {
                     VEHICLESTATUS : that.props.outVehStatus,
                     NUMOFBOXES : that.props.outNoOfBoxes,
-                    SEALCONDITION : that.props.ouotSealCond,
+                    SEALCONDITION : that.props.outSealCond,
                     REMARKS : that.props.outPODRemarks,
                     VRN: vrn.VRN
                 }
@@ -355,7 +355,7 @@ class Detail extends Component {
                                 id="reported"
                                 label="Reported"
                                 className={classes.textField}
-                                value={dateTimeFormatter.format(detailData.length > 0 ? detailData[0].VEHICLESECURITYDATE : "")}
+                                value={detailData.length > 0 ? dateTimeFormatter.format(new Date(detailData[0].VEHICLESECURITYDATE)) : ""}
                                 margin="normal"
                                 readOnly
                                 />
@@ -363,7 +363,7 @@ class Detail extends Component {
                                 id="checkIn"
                                 label="Checked"
                                 className={classes.textField}
-                                value={dateTimeFormatter.format(detailData.length > 0 ? detailData[0].VEHICLECHECKINDATE : "")}
+                                value={detailData.length > 0 ? dateTimeFormatter.format(new Date(detailData[0].VEHICLECHECKINDATE)) : ""}
                                 margin="normal"
                                 readOnly
                                 />
