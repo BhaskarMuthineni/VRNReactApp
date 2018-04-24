@@ -52,7 +52,7 @@ class Detail extends Component {
 
     render() {
         const { classes, theme, detailData, expanded} = this.props;
-        const vrnData = this.props.masterData.filter((ele) => {
+        const vrnData = this.props.tempMasterData.filter((ele) => {
             return (ele.VRN == parseInt(this.props.match.params.id));
         });
 
@@ -65,7 +65,7 @@ class Detail extends Component {
             hour: 'numeric',
             minute: 'numeric',
             second: 'numeric'
-        });       
+        });
 
         return (
             <div style={{ width: '100%' }}>

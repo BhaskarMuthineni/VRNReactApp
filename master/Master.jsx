@@ -26,10 +26,12 @@ class Master extends Component {
         this.handleSearchText = this.handleSearchText.bind(this);
     }
 
-    handleListItemClick(vrn) {
+    handleListItemClick(vrn, key) {
         var that = this;
         return function(event){
+            that.props.handleDrawerToggle();
             that.props.loadDetailData(vrn);
+            that.props.updateSelectedIndex(key);
         }
     }
 
@@ -40,7 +42,7 @@ class Master extends Component {
             this.props.handleMasterData(this.props.tempMasterData);
         }
         else{
-            var data = this.props.masterData.filter(function(ele){
+            var data = this.props.tempMasterData.filter(function(ele){
                 return (ele.VRN.toString().toLowerCase().indexOf(val) > -1) || (ele.VEHICLENUM.toLowerCase().indexOf(val) > -1);
             });
             this.props.handleMasterData(data);
@@ -53,20 +55,20 @@ class Master extends Component {
     }
 
     render() {
-        const { classes, theme } = this.props;
+        const { classes, theme, masterData, search, selectedIndex } = this.props;
 
         const drawer = (
             <div>
                 <AppBar className={classes.masterAppBar}>
                 <Toolbar>
                 {
-                    !this.props.search &&
+                    !search &&
                     <Typography variant="title" color="inherit" noWrap>
                         VRN List
                     </Typography>
                 }
                 {
-                    this.props.search &&
+                    search &&
                     <TextField
                     id="search"
                     label="Search"
@@ -76,15 +78,26 @@ class Master extends Component {
                     margin="normal"
                     />
                 }
-                    <Button variant="fab" mini color="primary" aria-label="search" onClick={this.handleSearch} className={classes.searchButton}>
+                    <Button
+                    variant="fab" 
+                    mini 
+                    color="primary"
+                    aria-label="search" 
+                    onClick={this.handleSearch}
+                    className={classes.searchButton}>
                         <SearchIcon/>
                     </Button>
                 </Toolbar>
                 </AppBar>
                 <List component="nav">
                     {
-                        this.props.masterData.map((vrn, i) =>
-                            <ListItem key={i} button divider onClick={this.handleListItemClick(vrn)}>
+                        masterData.map((vrn, i) =>
+                            <ListItem 
+                            key={i} 
+                            button 
+                            divider 
+                            onClick={this.handleListItemClick(vrn, i)} 
+                            className={i === selectedIndex ? classes.selectedItem: ""}>
                                 <ListItemIcon>
                                     { vrn.MODEOFTRANSPORT === "CA" ? <FlightIcon color="primary" /> : 
                                     (vrn.MODEOFTRANSPORT === "CR" ? <LocalTaxiIcon color="primary"/> : 
@@ -92,7 +105,13 @@ class Master extends Component {
                                     (vrn.MODEOFTRANSPORT === "RB" ? <DirectionsBikeIcon color="primary"/> :
                                     (vrn.MODEOFTRANSPORT === "RD" ? <LocalShippingIcon color="primary"/> : <WarningIcon color="primary"/>)))) }
                                 </ListItemIcon>
-                                <ListItemText primary={"VRN No.: " + vrn.VRN} secondary={(vrn.MODEOFTRANSPORT === "HD") ? ("Driver Name: " + vrn.DRIVERNAME) : ("Vehicle No.: " + vrn.VEHICLENUM)} />
+                                <ListItemText
+                                primary={"VRN No.: " + vrn.VRN}
+                                secondary={
+                                    (vrn.MODEOFTRANSPORT === "HD") ? 
+                                    ("Driver Name: " + vrn.DRIVERNAME) : 
+                                    ("Vehicle No.: " + vrn.VEHICLENUM)
+                                } />
                                 {
                                     vrn.VRNSTATUS === "C" &&
                                     <ListItemIcon className={classes.checkInIcon}>

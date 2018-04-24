@@ -23,6 +23,9 @@ const styles = theme => ({
     display: 'flex',
     width: '100%',
   },
+  selectedItem: {
+    backgroundColor: 'rgba(0, 0, 0, 0.2)'
+  },
   masterAppBar: {
     position: 'relative',
     [theme.breakpoints.up('md')]: {
@@ -134,6 +137,7 @@ class App extends Component {
             tempMasterData: [],
             masterData: [],
             detailData: [],
+            selectedIndex: 0,
             searchVisible: false,
             searchText: "",
             isLoading: false,
@@ -196,6 +200,7 @@ class App extends Component {
         this.callBack = this.callBack.bind(this);
         this.loadMasterData = this.loadMasterData.bind(this);
         this.loadDetailData = this.loadDetailData.bind(this);
+        this.updateSelectedIndex = this.updateSelectedIndex.bind(this);
         this.toggleLoader = this.toggleLoader.bind(this);
         this.handleDrawerToggle = this.handleDrawerToggle.bind(this);
         this.handleTabChange = this.handleTabChange.bind(this);
@@ -243,6 +248,10 @@ class App extends Component {
       this.setState({tempMasterData: data});
     }
 
+    updateSelectedIndex(index) {
+      this.setState({selectedIndex: index});
+    }
+
     handleSearchVisible(visible) {
       this.setState({search: visible});
     }
@@ -286,9 +295,11 @@ class App extends Component {
       var fnResponse = function(data){
         that.toggleLoader();
         if(Array.isArray(data)){
-          var sortedData = data.sort(function(a, b){return b.VRN - a.VRN});
-          that.setState({masterData: sortedData, tempMasterData: sortedData});
-          that.loadDetailData(sortedData[0]);
+          if(data.length > 0){
+            var sortedData = data.sort(function(a, b){return b.VRN - a.VRN});
+            that.setState({masterData: sortedData, tempMasterData: sortedData});
+            that.loadDetailData(sortedData[0]);
+          }          
         }
         else if(typeof data === "object" && data.message !== undefined){
           var title = that.getTitle(data.msgCode);
@@ -557,6 +568,8 @@ class App extends Component {
                                   handleTempMasterData={this.handleTempMasterData}
                                   handleAPICall={this.handleAPICall}
                                   loadDetailData={this.loadDetailData}
+                                  selectedIndex={this.state.selectedIndex}
+                                  updateSelectedIndex={this.updateSelectedIndex}
                                   toggleLoader={this.toggleLoader}
                                   handleDrawerToggle={this.handleDrawerToggle} 
                                   mobileOpen={this.state.mobileOpen}
@@ -583,7 +596,7 @@ class App extends Component {
                                   handleDrawerToggle={this.handleDrawerToggle} 
                                   tabValue={this.state.tabValue} 
                                   handleTabChange={this.handleTabChange} 
-                                  masterData={this.state.masterData} 
+                                  tempMasterData={this.state.tempMasterData} 
                                   detailData={this.state.detailData} 
                                   updateDetailData={this.updateDetailData}
                                   expanded={this.state.expanded} 
