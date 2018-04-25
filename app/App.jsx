@@ -178,7 +178,9 @@ class App extends Component {
             inVehStat: "",
             inVehNo: "",
             inFleetType: "",
+            inFleetTypeDesc: "",
             inTransporter: "",
+            inTransporterDesc: "",
             inSealCond: "",
             inSeal1: "",
             inSeal2: "",
@@ -197,11 +199,9 @@ class App extends Component {
         this.handleSearchVisible = this.handleSearchVisible.bind(this);
         this.updateSearchText = this.updateSearchText.bind(this);
         this.handleAPICall = this.handleAPICall.bind(this);
-        this.callBack = this.callBack.bind(this);
         this.loadMasterData = this.loadMasterData.bind(this);
         this.loadDetailData = this.loadDetailData.bind(this);
         this.updateSelectedIndex = this.updateSelectedIndex.bind(this);
-        this.toggleLoader = this.toggleLoader.bind(this);
         this.handleDrawerToggle = this.handleDrawerToggle.bind(this);
         this.handleTabChange = this.handleTabChange.bind(this);
         this.updateDetailData = this.updateDetailData.bind(this);
@@ -225,7 +225,6 @@ class App extends Component {
         this.handleInVehStat = this.handleInVehStat.bind(this);
         this.handleBlurInVehNo = this.handleBlurInVehNo.bind(this);        
         this.handleChangeInVehNo = this.handleChangeInVehNo.bind(this);
-        this.handleInFleetType = this.handleInFleetType.bind(this);
         this.handleInTransporter = this.handleInTransporter.bind(this);
         this.handleInSealCond = this.handleInSealCond.bind(this);
         this.handleInSeal1 = this.handleInSeal1.bind(this);
@@ -260,9 +259,9 @@ class App extends Component {
       this.setState({searchText: value});
     }
 
-    handleAPICall(path, method, fnResponse, data){
+    handleAPICall(path, method, callBack, data){
       var payload = JSON.stringify(data);
-      this.toggleLoader();
+      this.setState({isLoading: true});
       fetch(APIUrl + path, {
             method: method,
             headers: {
@@ -279,7 +278,24 @@ class App extends Component {
             throw new Error("Something went wrong ...");
           }
         })
-        .then(fnResponse)
+        .then(data => {
+          this.setState({isLoading: false});
+          if(Array.isArray(data) && data.length > 0){
+            callBack(data);
+          }
+          else if(typeof data === "object" && data.message !== undefined){
+            var btns = [{
+                text: "Ok",
+                event: () => {
+                  if(data.msgCode === "S"){
+                    callBack();
+                  }
+                  this.handleMsgDlg()                 
+                }
+            }];
+            this.handleMsgDlg(this.getTitle(data.msgCode), data.message, btns);
+          }          
+        })
         .catch(error => {
           this.setState({error, isLoading: false});
           var btns = [{
@@ -291,25 +307,14 @@ class App extends Component {
     }
 
     loadMasterData(){
-      let that = this;   
+      let that = this;
+      history.push("");
       var fnResponse = function(data){
-        that.toggleLoader();
-        if(Array.isArray(data)){
-          if(data.length > 0){
-            var sortedData = data.sort(function(a, b){return b.VRN - a.VRN});
-            that.setState({masterData: sortedData, tempMasterData: sortedData});
-            that.loadDetailData(sortedData[0]);
-          }          
-        }
-        else if(typeof data === "object" && data.message !== undefined){
-          var title = that.getTitle(data.msgCode);
-          var msg = data.message;
-          var btns = [{
-              text: "Ok",
-              event: () => that.handleMsgDlg()
-          }];
-          that.handleMsgDlg(title, msg, btns);          
-        }        
+        var sortedData = data.sort(function(a, b){
+          return b.VRN - a.VRN;
+        });
+        that.setState({masterData: sortedData, tempMasterData: sortedData});
+        that.loadDetailData(sortedData[0]);
       }
       let path = "VRNMaster";
       this.handleAPICall(path, "GET", fnResponse);
@@ -323,15 +328,9 @@ class App extends Component {
       fnExpPanelChange(null, true);//calling the returned function
       var fnDetailResponse = function(data){
           that.updateDetailData(data);
-          that.toggleLoader();
       }
       let path = "VRNDetail/";
       this.handleAPICall(path + vrn.VRN, "GET", fnDetailResponse);
-    }
-
-    toggleLoader() {
-      const { isLoading } = this.state;
-      this.setState({ isLoading: !isLoading });
     }
 
     handleDrawerToggle() {
@@ -393,7 +392,7 @@ class App extends Component {
 
     handleMsgDlg(title, value, btns) {
       const { messageDialogOpen } = this.state;
-      this.setState({ 
+      this.setState({
         messageDialogOpen: !messageDialogOpen,
         messageDialogTitle: title ? title : "",
         messageDialogValue: value ? value : "",
@@ -425,7 +424,9 @@ class App extends Component {
         inVehStat: "L",
         inVehNo: "",
         inFleetType: "",
+        inFleetTypeDesc: "",
         inTransporter: "",
+        inTransporterDesc: "",
         inSealCond: "I",
         inSeal1: "",
         inSeal2: "",
@@ -466,17 +467,60 @@ class App extends Component {
     }
 
     handleBlurInVehNo(event){
-      var val = this.state.inVehNo;      
-      if(/^[A-Z]{2}[0-9]{1,3}(?:[A-Z])?(?:[A-Z]*)?[0-9]{1,4}$/.test(val)){
-        //this.setState({inVehNo: val});
+      const { inVehNo, modeOfTransport } = this.state;
+      if(/^[A-Z]{2}[0-9]{1,3}(?:[A-Z])?(?:[A-Z]*)?[0-9]{1,4}$/.test(inVehNo)){
+        let that = this;   
+        var fnResponse = function(data){
+          if(Array.isArray(data)){
+            if(data.length > 0){
+              that.setState({                
+                inFleetType: data[0].FleetType,
+                inFleetTypeDesc: data[0].FleetTypeDesc,
+                inTransporter: data[0].Vendor,
+                inTransporterDesc: data[0].VendorName
+              });
+            }
+            else{
+              var fleetType = "", fleetTypeDesc = "";
+              switch(modeOfTransport){
+                case "RD": fleetType = "M";
+                           fleetTypeDesc = "Market Vehicle";
+                           break;
+                case "CA":
+                case "CR": fleetType = "V";
+                           fleetTypeDesc = "Vendor Vehicle";
+                           break;
+                case "RB": fleetType = "B";
+                           fleetTypeDesc = "Biker";
+                           break;
+                default: fleetType = "";
+                         fleetTypeDesc = "";
+              }
+              that.setState({
+                inFleetType: fleetType,
+                inFleetTypeDesc: fleetTypeDesc,
+                inTransporter: "",
+                inTransporterDesc: ""
+              });
+            }
+          }
+          else{
+            that.setState({
+              inVehNo: "",
+              inFleetType: "",
+              inFleetTypeDesc: "",
+              inTransporter: "",
+              inTransporterDesc: ""
+            });
+          }
+        }
+        let path = "VRNVehicle/";
+        this.handleAPICall(path + inVehNo, "GET", fnResponse);
       }
       else{
         this.setState({inVehNo: ""});
+        this.toggleSnackBar("Incorrect vehicle number");
       }
-    }
-
-    handleInFleetType(event) {
-      this.setState({inFleetType: event.target.value});
     }
 
     handleInTransporter(event) {
@@ -533,22 +577,7 @@ class App extends Component {
         case "E": return "Error";
         default: return "Warning";
       }
-    }
-
-    callBack(data) {
-      var title = this.getTitle(data.msgCode);
-      var msg = data.message;
-      var btns = [{
-          text: "Ok",
-          event: () => {
-            history.push("");
-            this.loadMasterData();
-            this.handleMsgDlg();
-          }
-      }];
-      this.handleMsgDlg(title, msg, btns);
-      this.toggleLoader();
-    }
+    }    
 
     render() {
         const { classes, theme } = this.props;      
@@ -570,7 +599,6 @@ class App extends Component {
                                   loadDetailData={this.loadDetailData}
                                   selectedIndex={this.state.selectedIndex}
                                   updateSelectedIndex={this.updateSelectedIndex}
-                                  toggleLoader={this.toggleLoader}
                                   handleDrawerToggle={this.handleDrawerToggle} 
                                   mobileOpen={this.state.mobileOpen}
                                   tempMasterData={this.state.tempMasterData}  
@@ -592,7 +620,6 @@ class App extends Component {
                                   theme={theme}
                                   handleAPICall={this.handleAPICall}
                                   loadMasterData={this.loadMasterData}
-                                  toggleLoader={this.toggleLoader}
                                   handleDrawerToggle={this.handleDrawerToggle} 
                                   tabValue={this.state.tabValue} 
                                   handleTabChange={this.handleTabChange} 
@@ -612,7 +639,6 @@ class App extends Component {
                                   handleOutPODRemarks={this.handleOutPODRemarks}
                                   handleMsgDlg={this.handleMsgDlg}
                                   toggleSnackBar={this.toggleSnackBar}
-                                  callBack={this.callBack}
                                   {...props} 
                                   />} 
                   />
@@ -626,7 +652,6 @@ class App extends Component {
                                 controlsVisibility={this.state.controlsVisibility}
                                 handleAPICall={this.handleAPICall}
                                 loadMasterData={this.loadMasterData}
-                                toggleLoader={this.toggleLoader}
                                 handleDrawerToggle={this.handleDrawerToggle}
                                 handleMsgDlg={this.handleMsgDlg}
                                 toggleSnackBar={this.toggleSnackBar}
@@ -641,7 +666,9 @@ class App extends Component {
                                 inVehStat={this.state.inVehStat}                                
                                 inVehNo={this.state.inVehNo}                                
                                 inFleetType={this.state.inFleetType}
+                                inFleetTypeDesc={this.state.inFleetTypeDesc}
                                 inTransporter={this.state.inTransporter}
+                                inTransporterDesc={this.state.inTransporterDesc}
                                 inSealCond={this.state.inSealCond}
                                 inSeal1={this.state.inSeal1}
                                 inSeal2={this.state.inSeal2}
@@ -656,7 +683,6 @@ class App extends Component {
                                 handleInVehStat={this.handleInVehStat}
                                 handleChangeInVehNo={this.handleChangeInVehNo}
                                 handleBlurInVehNo={this.handleBlurInVehNo}
-                                handleInFleetType={this.handleInFleetType}
                                 handleInTransporter={this.handleInTransporter}
                                 handleInSealCond={this.handleInSealCond}
                                 handleInSeal1={this.handleInSeal1}
@@ -668,8 +694,7 @@ class App extends Component {
                                 handleInProofType={this.handleInProofType}
                                 handleInProofNo={this.handleInProofNo}
                                 handleInLRNo={this.handleInLRNo}
-                                handleInRemarks={this.handleInRemarks} 
-                                callBack={this.callBack}
+                                handleInRemarks={this.handleInRemarks}
                                 {...props}
                                 />} 
                   />
@@ -692,13 +717,13 @@ class App extends Component {
                   vertical: 'bottom', 
                   horizontal: 'center'
               }}
-              open={this.snackBarOpen}
+              open={this.state.snackBarOpen}
               onClose={() => this.toggleSnackBar()}
               //autoHideDuration={3000}
               SnackbarContentProps={{
                   'aria-describedby': 'message-id'
               }}
-              message={<span id="message-id">{this.snackBarMessage}</span>}
+              message={<span id="message-id">{this.state.snackBarMessage}</span>}
             />
           </div>
         );        

@@ -43,9 +43,9 @@ class Create extends Component {
             MODEOFTRANSPORT: this.props.modeOfTransport,
             VEHICLESTATUS: this.props.inVehStat,
             VEHICLENUM: this.props.inVehNo,
-            FLEETTYPE: this.props.inFleetType,
+            FLEETTYPE: this.props.inFleetTypeDesc,
             FLEETTYPECODE: this.props.inFleetType,
-            TRANSPORTER: this.props.inTransporter,
+            TRANSPORTER: this.props.inTransporterDesc,
             TRANSPORTERCODE: this.props.inTransporter,
             SEALCONDITION: this.props.inSealCond,
             SEAL1: this.props.inSeal1,
@@ -55,14 +55,14 @@ class Create extends Component {
             DRIVERNUM: this.props.inMobNo,
             DRIVERNAME: this.props.inDriverName,
             IDPROOFTYPE: this.props.inProofType,
-            IDPROOFNUM: this.props.inProofNo,                
-            LRNUM: this.props.inLRNo,                
+            IDPROOFNUM: this.props.inProofNo,
+            LRNUM: this.props.inLRNo,
             REMARKS: this.props.inRemarks,
             VRNSTATUS: (checkIn) ? "C" : "R",
             CHECKINOUT: "I"
         };
         let path = "VRNMaster";
-        this.props.handleAPICall(path, "POST",  this.props.callBack, data);
+        this.props.handleAPICall(path, "POST", () => this.props.loadMasterData(), data);
     }
 
      render() {
@@ -111,7 +111,9 @@ class Create extends Component {
                         }
                     </Select>
                     </FormControl>
-                    <Stepper activeStep={this.props.activeStep}>
+                    {
+                        this.props.transportModes.length > 0 &&
+                        <Stepper activeStep={this.props.activeStep}>
                         {
                             steps.map((label, index) => 
                                 <Step key={label}>
@@ -119,10 +121,11 @@ class Create extends Component {
                                 </Step>
                             )
                         }
-                    </Stepper>
+                        </Stepper>
+                    }                    
                     <div>
                     {   
-                        steps.indexOf("Vehicle") === activeStep &&
+                        this.props.transportModes.length > 0 && steps.indexOf("Vehicle") === activeStep &&
                         <div>
                             <form className={classes.container} noValidate autoComplete="off">                                    
                                 {
@@ -159,10 +162,9 @@ class Create extends Component {
                                     id="fleetType"
                                     label="Fleet Type"
                                     className={classes.textField}
-                                    value={this.props.inFleetType}
+                                    value={this.props.inFleetTypeDesc}
                                     margin="normal"
-                                    onChange={this.props.handleInFleetType}
-                                    //disabled
+                                    disabled
                                     />
                                 }
                                 {
@@ -171,7 +173,7 @@ class Create extends Component {
                                     id="transName"
                                     label="Transporter/Agency Name"
                                     className={classes.textField}
-                                    value={this.props.inTransporter}
+                                    value={this.props.inTransporterDesc}
                                     margin="normal"
                                     onChange={this.props.handleInTransporter}
                                     />                                   
@@ -255,7 +257,7 @@ class Create extends Component {
                         </div>
                     }
                     {
-                        steps.indexOf("Driver") === activeStep &&
+                        this.props.transportModes.length > 0 && steps.indexOf("Driver") === activeStep &&
                         <div>
                             <form className={classes.container} noValidate autoComplete="off">                                    
                                 {
@@ -328,7 +330,7 @@ class Create extends Component {
                         </div>
                     }
                     {
-                        steps.indexOf("Done") === activeStep &&
+                        this.props.transportModes.length > 0 && steps.indexOf("Done") === activeStep &&
                         <div>
                             <form className={classes.container} noValidate autoComplete="off">                              
                                 {
@@ -374,12 +376,11 @@ class Create extends Component {
 
      componentDidMount(){
         let that = this;      
-        var fnResponse = function(data){
+        var callBack = function(data){
           that.props.handleTransportModes(data);
-          that.props.toggleLoader();
         }
         let path = "VRNParam/TrnsprtMode";
-        this.props.handleAPICall(path, "GET", fnResponse);
+        this.props.handleAPICall(path, "GET", callBack);
      }
 }
 

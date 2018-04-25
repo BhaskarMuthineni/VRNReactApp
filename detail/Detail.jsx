@@ -19,36 +19,34 @@ class Detail extends Component {
         super(props);
     }    
 
-    handleCheckIn(vrn) {
-        var that = this;
-        return function(event) {           
-            let path = "VRNCheckIN/";
-            that.props.handleAPICall(path + vrn, "PUT", that.props.callBack);
-        }
-    }
-
-    handleCheckOut(vrn) {
+    handleCheckInOut(vrn) {
         var that = this;
         return function(event) {
-            if(that.props.tabValue !== 1){
-                that.props.handleTabChange(null, 1);
+            if(vrn.VRNSTATUS === "R"){
+                let path = "VRNCheckIN/";
+                that.props.handleAPICall(path + vrn.VRN, "PUT", () => that.props.loadMasterData());                   
             }
-            if(that.props.controlsVisibility["outVehStat"][vrn.MODEOFTRANSPORT] && that.props.outVehStatus === ""){
-                that.props.toggleSnackBar("Select Vehicle Status");
-            }
-            else{                
-                var data = {
-                    VEHICLESTATUS : that.props.outVehStatus,
-                    NUMOFBOXES : that.props.outNoOfBoxes,
-                    SEALCONDITION : that.props.outSealCond,
-                    REMARKS : that.props.outPODRemarks,
-                    VRN: vrn.VRN
+            else if(vrn.VRNSTATUS === "C"){
+                if(that.props.tabValue !== 1){
+                    that.props.handleTabChange(null, 1);
                 }
-                let path = "VRNCheckOUT";
-                that.props.handleAPICall(path, "POST",  that.props.callBack, data);
-            }
+                if(that.props.controlsVisibility["outVehStat"][vrn.MODEOFTRANSPORT] && that.props.outVehStatus === ""){
+                    that.props.toggleSnackBar("Select Vehicle Status");
+                }
+                else{
+                    var data = {
+                        VEHICLESTATUS : that.props.outVehStatus,
+                        NUMOFBOXES : that.props.outNoOfBoxes,
+                        SEALCONDITION : that.props.outSealCond,
+                        REMARKS : that.props.outPODRemarks,
+                        VRN: vrn.VRN
+                    }
+                    let path = "VRNCheckOUT";
+                    that.props.handleAPICall(path, "POST", () => that.props.loadMasterData(), data);
+                }
+            }            
         }
-    }    
+    }
 
     render() {
         const { classes, theme, detailData, expanded} = this.props;
@@ -370,18 +368,9 @@ class Detail extends Component {
                             </form>
                         </div>
                     }
-                    {
-                        vrnData[0].VRNSTATUS == "R" &&
-                        <Button variant="raised" color="primary" className={classes.button} onClick={this.handleCheckIn(vrnData[0].VRN)}>
-                            Check-In
-                        </Button>
-                    }
-                    {
-                        vrnData[0].VRNSTATUS == "C" &&
-                        <Button variant="raised" color="primary" className={classes.button} onClick={this.handleCheckOut(vrnData[0])}>
-                            Check-Out
-                        </Button>
-                    }
+                    <Button variant="raised" color="primary" className={classes.button} onClick={this.handleCheckInOut(vrnData[0])}>
+                        {vrnData[0].VRNSTATUS === "R" ? "Check-In" : (vrnData[0].VRNSTATUS === "C") ? "Check-Out": ""}
+                    </Button>
                 </main>
             </div>
         );        
