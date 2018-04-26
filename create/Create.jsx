@@ -13,9 +13,6 @@ import { MenuItem } from 'material-ui/Menu';
 import Select from 'material-ui/Select';
 import Stepper, { Step, StepLabel } from 'material-ui/Stepper';
 import Button from 'material-ui/Button';
-// import Autosuggest from 'react-autosuggest';
-// import match from 'autosuggest-highlight/match';
-// import parse from 'autosuggest-highlight/parse';
 
 class Create extends Component {
     constructor(props) {
@@ -24,49 +21,8 @@ class Create extends Component {
         this.handleCheckIn = this.handleCheckIn.bind(this);
     }
 
-    handleReportIn() {
-        // if(that.props.controlsVisibility["outVehStat"][vrn.MODEOFTRANSPORT] && that.props.outVehStatus === ""){
-        //     that.props.toggleSnackBar("Select Vehicle Status");
-        // }
-        // else{
-            
-        //}
-        this.postVRN();
-    }
-
-    handleCheckIn() {
-        this.postVRN(true);
-    }
-
-    postVRN(checkIn) {        
-        var data = {
-            MODEOFTRANSPORT: this.props.modeOfTransport,
-            VEHICLESTATUS: this.props.inVehStat,
-            VEHICLENUM: this.props.inVehNo,
-            FLEETTYPE: this.props.inFleetTypeDesc,
-            FLEETTYPECODE: this.props.inFleetType,
-            TRANSPORTER: this.props.inTransporterDesc,
-            TRANSPORTERCODE: this.props.inTransporter,
-            SEALCONDITION: this.props.inSealCond,
-            SEAL1: this.props.inSeal1,
-            SEAL2: this.props.inSeal2,
-            NUMOFBOXES: this.props.inNoOfBoxes,
-            LICENSENUM: this.props.inLicNo,
-            DRIVERNUM: this.props.inMobNo,
-            DRIVERNAME: this.props.inDriverName,
-            IDPROOFTYPE: this.props.inProofType,
-            IDPROOFNUM: this.props.inProofNo,
-            LRNUM: this.props.inLRNo,
-            REMARKS: this.props.inRemarks,
-            VRNSTATUS: (checkIn) ? "C" : "R",
-            CHECKINOUT: "I"
-        };
-        let path = "VRNMaster";
-        this.props.handleAPICall(path, "POST", () => this.props.loadMasterData(), data);
-    }
-
-     render() {
-        const { classes, theme, activeStep, controlsVisibility, modeOfTransport} = this.props;
+    render() {
+        const { classes, theme, activeStep, controlsVisibility, modeOfTransport } = this.props;
 
         const steps = [];
         
@@ -168,36 +124,23 @@ class Create extends Component {
                                     />
                                 }
                                 {
-                                    controlsVisibility["transName"][modeOfTransport] && 
-                                    <TextField
-                                    id="transName"
-                                    label="Transporter/Agency Name"
-                                    className={classes.textField}
-                                    value={this.props.inTransporterDesc}
-                                    margin="normal"
-                                    onChange={this.props.handleInTransporter}
-                                    />                                   
-                                    //<Autosuggest
-                                        // theme={{
-                                        // container: classes.container,
-                                        // suggestionsContainerOpen: classes.suggestionsContainerOpen,
-                                        // suggestionsList: classes.suggestionsList,
-                                        // suggestion: classes.suggestion,
-                                        // }}
-                                        // renderInputComponent={renderInput}
-                                        // suggestions={this.state.suggestions}
-                                        // onSuggestionsFetchRequested={this.handleSuggestionsFetchRequested}
-                                        // onSuggestionsClearRequested={this.handleSuggestionsClearRequested}
-                                        // renderSuggestionsContainer={renderSuggestionsContainer}
-                                        // getSuggestionValue={getSuggestionValue}
-                                        // renderSuggestion={renderSuggestion}
-                                        //inputProps={
-                                       // classes,
-                                        // placeholder='Transporter/Agency Name'
-                                        // value= {this.props.inTransporter}
-                                        // onChange= {this.props.handleInTransporter}
-                                       // }
-                                    ///>
+                                    controlsVisibility["transName"][modeOfTransport] &&                                     
+                                    <FormControl className={classes.formControl}>
+                                        <InputLabel htmlFor="transporter">Transporter/Agency Name</InputLabel>
+                                        <Select
+                                            value={this.props.inTransporter}
+                                            onChange={this.props.handleInTransporter}
+                                            inputProps={{
+                                            name: 'transporter',
+                                            id: 'transporter',
+                                            }}>
+                                        {
+                                            this.props.transporters.map((trans, i) =>
+                                                <MenuItem key={i} value={trans.Vendor}>{trans.Name1}</MenuItem>
+                                            )
+                                        }
+                                        </Select>
+                                    </FormControl>
                                 }
                                 {
                                     controlsVisibility["sealCond"][modeOfTransport] && this.props.inVehStat !== "E" &&
@@ -268,7 +211,8 @@ class Create extends Component {
                                     className={classes.textField}
                                     value={this.props.inLicNo}
                                     margin="normal"
-                                    onChange={this.props.handleInLicNo}
+                                    onChange={this.props.handleChangeInLicNo}
+                                    onBlur={this.props.handleBlurInLicNo}
                                     />
                                 }
                                 {
@@ -294,18 +238,26 @@ class Create extends Component {
                                     />
                                 }
                                 {
-                                    controlsVisibility["idProof"][modeOfTransport] &&
-                                    <TextField
-                                    id="proofType"
-                                    label="ID Proof Type"
-                                    className={classes.textField}
-                                    value={this.props.inProofType}
-                                    margin="normal"
-                                    onChange={this.props.handleInProofType}
-                                    />
+                                    controlsVisibility["idProof"][modeOfTransport] &&                                    
+                                    <FormControl className={classes.formControl}>
+                                        <InputLabel htmlFor="proofType">ID Proof Type</InputLabel>
+                                        <Select
+                                            value={this.props.inProofType}
+                                            onChange={this.props.handleInProofType}
+                                            inputProps={{
+                                            name: 'proofType',
+                                            id: 'proofType',
+                                            }}>
+                                        {
+                                            this.props.proofTypes.map((modes, i) =>
+                                                <MenuItem key={i} value={modes.modeNum}>{modes.modeTxt}</MenuItem>
+                                            )
+                                        }
+                                        </Select>
+                                    </FormControl>
                                 }
                                 {
-                                    controlsVisibility["idProof"][modeOfTransport] &&
+                                    controlsVisibility["idProof"][modeOfTransport] && this.props.inProofType !== "" &&
                                     <TextField
                                     id="proofNumber"
                                     label="ID Proof Number"
@@ -375,13 +327,49 @@ class Create extends Component {
      }
 
      componentDidMount(){
-        let that = this;      
-        var callBack = function(data){
-          that.props.handleTransportModes(data);
-        }
-        let path = "VRNParam/TrnsprtMode";
-        this.props.handleAPICall(path, "GET", callBack);
+        this.props.loadTransportModes();
      }
+
+     handleReportIn() {
+        // if(that.props.controlsVisibility["outVehStat"][vrn.MODEOFTRANSPORT] && that.props.outVehStatus === ""){
+        //     that.props.toggleSnackBar("Select Vehicle Status");
+        // }
+        // else{
+            
+        //}
+        this.postVRN();
+    }
+
+    handleCheckIn() {
+        this.postVRN(true);
+    }
+
+    postVRN(checkIn) {
+        var data = {
+            MODEOFTRANSPORT: this.props.modeOfTransport,
+            VEHICLESTATUS: this.props.inVehStat,
+            VEHICLENUM: this.props.inVehNo,
+            FLEETTYPE: this.props.inFleetTypeDesc,
+            FLEETTYPECODE: this.props.inFleetType,
+            TRANSPORTER: this.props.inTransporterDesc,
+            TRANSPORTERCODE: this.props.inTransporter,
+            SEALCONDITION: this.props.inSealCond,
+            SEAL1: this.props.inSeal1,
+            SEAL2: this.props.inSeal2,
+            NUMOFBOXES: this.props.inNoOfBoxes,
+            LICENSENUM: this.props.inLicNo,
+            DRIVERNUM: this.props.inMobNo,
+            DRIVERNAME: this.props.inDriverName,
+            IDPROOFTYPE: this.props.inProofType,
+            IDPROOFNUM: this.props.inProofNo,
+            LRNUM: this.props.inLRNo,
+            REMARKS: this.props.inRemarks,
+            VRNSTATUS: (checkIn) ? "C" : "R",
+            CHECKINOUT: "I"
+        };
+        let path = "VRNMaster";
+        this.props.handleAPICall(path, "POST", () => this.props.loadMasterData(), data);
+    }
 }
 
 export default Create;

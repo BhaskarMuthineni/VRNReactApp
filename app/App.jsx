@@ -173,8 +173,10 @@ class App extends Component {
             snackBarOpen: false,
             snackBarMessage: "",            
             transportModes: [],
+            transporters: [],
+            proofTypes: [],
             activeStep: 0,
-            modeOfTransport: "",            
+            modeOfTransport: "",      
             inVehStat: "",
             inVehNo: "",
             inFleetType: "",
@@ -201,6 +203,9 @@ class App extends Component {
         this.handleAPICall = this.handleAPICall.bind(this);
         this.loadMasterData = this.loadMasterData.bind(this);
         this.loadDetailData = this.loadDetailData.bind(this);
+        this.loadTransportModes = this.loadTransportModes.bind(this);
+        this.loadTransporters = this.loadTransporters.bind(this);
+        this.loadProofTypes = this.loadProofTypes.bind(this);
         this.updateSelectedIndex = this.updateSelectedIndex.bind(this);
         this.handleDrawerToggle = this.handleDrawerToggle.bind(this);
         this.handleTabChange = this.handleTabChange.bind(this);
@@ -217,7 +222,6 @@ class App extends Component {
         this.toggleSnackBar = this.toggleSnackBar.bind(this);
         //Create methods
         this.handleMOTChange = this.handleMOTChange.bind(this);
-        this.handleTransportModes = this.handleTransportModes.bind(this);
         this.handleActiveStep = this.handleActiveStep.bind(this);
         this.handleStepperNext = this.handleStepperNext.bind(this);
         this.handleStepperBack = this.handleStepperBack.bind(this);
@@ -230,354 +234,18 @@ class App extends Component {
         this.handleInSeal1 = this.handleInSeal1.bind(this);
         this.handleInSeal2 = this.handleInSeal2.bind(this);
         this.handleInNoOfBoxes = this.handleInNoOfBoxes.bind(this);
-        this.handleInLicNo = this.handleInLicNo.bind(this);
+        this.handleChangeInLicNo = this.handleChangeInLicNo.bind(this);
+        this.handleBlurInLicNo = this.handleBlurInLicNo.bind(this);
         this.handleInMobNo = this.handleInMobNo.bind(this);
         this.handleInDriverName = this.handleInDriverName.bind(this);
         this.handleInProofType = this.handleInProofType.bind(this);
         this.handleInProofNo = this.handleInProofNo.bind(this);
         this.handleInLRNo = this.handleInLRNo.bind(this);
         this.handleInRemarks = this.handleInRemarks.bind(this);
+
+        this.inVehNoChanged = false;
+        this.inLicNoChanged = false;
     }
-
-    handleMasterData(data) {
-      this.setState({masterData: data});
-    }
-
-    handleTempMasterData(data) {
-      this.setState({tempMasterData: data});
-    }
-
-    updateSelectedIndex(index) {
-      this.setState({selectedIndex: index});
-    }
-
-    handleSearchVisible(visible) {
-      this.setState({search: visible});
-    }
-
-    updateSearchText(value) {
-      this.setState({searchText: value});
-    }
-
-    handleAPICall(path, method, callBack, data){
-      var payload = JSON.stringify(data);
-      this.setState({isLoading: true});
-      fetch(APIUrl + path, {
-            method: method,
-            headers: {
-                'Accept':'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: payload
-        })
-        .then(response => {
-          if(response.ok) {
-            return response.json(); 
-          }
-          else{
-            throw new Error("Something went wrong ...");
-          }
-        })
-        .then(data => {
-          this.setState({isLoading: false});
-          if(Array.isArray(data) && data.length > 0){
-            callBack(data);
-          }
-          else if(typeof data === "object" && data.message !== undefined){
-            var btns = [{
-                text: "Ok",
-                event: () => {
-                  if(data.msgCode === "S"){
-                    callBack();
-                  }
-                  this.handleMsgDlg()                 
-                }
-            }];
-            this.handleMsgDlg(this.getTitle(data.msgCode), data.message, btns);
-          }          
-        })
-        .catch(error => {
-          this.setState({error, isLoading: false});
-          var btns = [{
-            text: 'Ok',
-            event: () => this.handleMsgDlg()
-          }]
-          this.handleMsgDlg("Error", error.message, btns);
-        })
-    }
-
-    loadMasterData(){
-      let that = this;
-      history.push("");
-      var fnResponse = function(data){
-        var sortedData = data.sort(function(a, b){
-          return b.VRN - a.VRN;
-        });
-        that.setState({masterData: sortedData, tempMasterData: sortedData});
-        that.loadDetailData(sortedData[0]);
-      }
-      let path = "VRNMaster";
-      this.handleAPICall(path, "GET", fnResponse);
-    }
-
-    loadDetailData(vrn){
-      var that = this;
-      history.push("/detail/" + vrn.VRN);//for Routing to detail
-      this.handleTabChange(null,0);//for initially setting Arrival tab visible
-      var fnExpPanelChange = this.handleExpPanelChange((vrn.MODEOFTRANSPORT !== 'HD') ? 'panel1' : 'panel2');//for initially setting Vehicle panel visible
-      fnExpPanelChange(null, true);//calling the returned function
-      var fnDetailResponse = function(data){
-          that.updateDetailData(data);
-      }
-      let path = "VRNDetail/";
-      this.handleAPICall(path + vrn.VRN, "GET", fnDetailResponse);
-    }
-
-    handleDrawerToggle() {
-        this.setState({ mobileOpen: !this.state.mobileOpen });
-    };
-
-    handleTabChange(event, value) {
-        this.setState({ tabValue: value });
-    }
-
-    updateDetailData(data) {
-        this.setState({
-          detailData: data, 
-          outVehStatus: "",
-          outNoOfBoxes: "",
-          outSealCond: "",
-          outPODRemarks: ""
-        });
-    }
-
-    handleExpPanelChange(panel){
-      var that = this;
-        return function(event, expanded) {
-          that.setState({ expanded : expanded ?  panel : false });
-      }
-    }
-
-    handleOutVehStat(event, value) {
-      this.setState({
-        outVehStatus: value        
-      });
-      if(value === "E") {
-        this.setState({
-          outNoOfBoxes: "",
-          outSealCond: ""
-        });
-      }
-    }
-
-    handleOutNoOfBoxes(event) {
-      var val = event.target.value;
-      if(val.length <= 6){
-        if(/^[0-9]+$/.test(val)){
-          this.setState({ outNoOfBoxes: event.target.value});
-        }
-        else{
-          this.setState({ outNoOfBoxes: ""});
-        }
-      }      
-    }
-
-    handleOutSealCond(event, value) {
-      this.setState({ outSealCond: value});
-    }
-
-    handleOutPODRemarks(event) {
-      this.setState({ outPODRemarks: event.target.value });
-    }
-
-    handleMsgDlg(title, value, btns) {
-      const { messageDialogOpen } = this.state;
-      this.setState({
-        messageDialogOpen: !messageDialogOpen,
-        messageDialogTitle: title ? title : "",
-        messageDialogValue: value ? value : "",
-        messageDialogButtons: btns ? btns : []
-      });
-    }    
-
-    toggleSnackBar(msg){
-      const { snackBarOpen } = this.state;
-      this.setState({
-        snackBarOpen: !snackBarOpen,
-        snackBarMessage: (msg ? msg : "")
-      });
-    }    
-
-    handleMOTChange(event){
-      var val = event.target.value;
-      this.setState({
-        modeOfTransport: val, 
-        inVehStat: (val === "RD") ? "L": "",
-        inSealCond: (val === "RD") ? "I": "",
-      });
-    }
-
-    handleTransportModes(data){
-      this.setState({
-        transportModes: data,
-        modeOfTransport: "RD",
-        inVehStat: "L",
-        inVehNo: "",
-        inFleetType: "",
-        inFleetTypeDesc: "",
-        inTransporter: "",
-        inTransporterDesc: "",
-        inSealCond: "I",
-        inSeal1: "",
-        inSeal2: "",
-        inNoOfBoxes: "",
-        inLicNo: "",
-        inMobNo: "",
-        inDriverName: "",
-        inProofType: "",
-        inProofNo: "",
-        inLRNo: "",
-        inRemarks: ""
-      });
-    }
-
-    handleActiveStep(step) {
-      this.setState({activeStep: step});
-    }
-
-    handleStepperNext() {
-      const { activeStep } = this.state;
-      this.setState({activeStep: activeStep + 1});
-    }
-
-    handleStepperBack() {
-      const { activeStep } = this.state;
-      this.setState({activeStep: activeStep - 1});
-    }
-
-    handleInVehStat(event, value) {
-      this.setState({inVehStat: value});
-    }
-
-    handleChangeInVehNo(event) {
-      var val = event.target.value;
-      if(val.length <= 10){        
-        this.setState({inVehNo: val});
-      }
-    }
-
-    handleBlurInVehNo(event){
-      const { inVehNo, modeOfTransport } = this.state;
-      if(/^[A-Z]{2}[0-9]{1,3}(?:[A-Z])?(?:[A-Z]*)?[0-9]{1,4}$/.test(inVehNo)){
-        let that = this;   
-        var fnResponse = function(data){
-          if(Array.isArray(data)){
-            if(data.length > 0){
-              that.setState({                
-                inFleetType: data[0].FleetType,
-                inFleetTypeDesc: data[0].FleetTypeDesc,
-                inTransporter: data[0].Vendor,
-                inTransporterDesc: data[0].VendorName
-              });
-            }
-            else{
-              var fleetType = "", fleetTypeDesc = "";
-              switch(modeOfTransport){
-                case "RD": fleetType = "M";
-                           fleetTypeDesc = "Market Vehicle";
-                           break;
-                case "CA":
-                case "CR": fleetType = "V";
-                           fleetTypeDesc = "Vendor Vehicle";
-                           break;
-                case "RB": fleetType = "B";
-                           fleetTypeDesc = "Biker";
-                           break;
-                default: fleetType = "";
-                         fleetTypeDesc = "";
-              }
-              that.setState({
-                inFleetType: fleetType,
-                inFleetTypeDesc: fleetTypeDesc,
-                inTransporter: "",
-                inTransporterDesc: ""
-              });
-            }
-          }
-          else{
-            that.setState({
-              inVehNo: "",
-              inFleetType: "",
-              inFleetTypeDesc: "",
-              inTransporter: "",
-              inTransporterDesc: ""
-            });
-          }
-        }
-        let path = "VRNVehicle/";
-        this.handleAPICall(path + inVehNo, "GET", fnResponse);
-      }
-      else{
-        this.setState({inVehNo: ""});
-        this.toggleSnackBar("Incorrect vehicle number");
-      }
-    }
-
-    handleInTransporter(event) {
-      this.setState({inTransporter: event.target.value});
-    }
-
-    handleInSealCond(event, value) {
-      this.setState({inSealCond: value});
-    }
-
-    handleInSeal1(event) {
-      this.setState({inSeal1: event.target.value});
-    }
-
-    handleInSeal2(event) {
-      this.setState({inSeal2: event.target.value});
-    }
-
-    handleInNoOfBoxes(event) {
-      this.setState({inNoOfBoxes: event.target.value});
-    }
-
-    handleInLicNo(event) {
-      this.setState({inLicNo: event.target.value});
-    }
-
-    handleInMobNo(event) {
-      this.setState({inMobNo: event.target.value});
-    }
-
-    handleInDriverName(event) {
-      this.setState({inDriverName: event.target.value});
-    }
-
-    handleInProofType(event) {
-      this.setState({inProofType: event.target.value});
-    }
-
-    handleInProofNo(event) {
-      this.setState({inProofNo: event.target.value});
-    }
-
-    handleInLRNo(event) {
-      this.setState({inLRNo: event.target.value});
-    }
-
-    handleInRemarks(event) {
-      this.setState({inRemarks: event.target.value});
-    }
-
-    getTitle(code){
-      switch(code) {
-        case "S": return "Success";
-        case "E": return "Error";
-        default: return "Warning";
-      }
-    }    
 
     render() {
         const { classes, theme } = this.props;      
@@ -657,7 +325,9 @@ class App extends Component {
                                 toggleSnackBar={this.toggleSnackBar}
                                 modeOfTransport={this.state.modeOfTransport}
                                 transportModes={this.state.transportModes}
-                                handleTransportModes={this.handleTransportModes}
+                                transporters={this.state.transporters}
+                                proofTypes={this.state.proofTypes}
+                                loadTransportModes={this.loadTransportModes}                                
                                 handleMOTChange={this.handleMOTChange}
                                 activeStep={this.state.activeStep}
                                 handleActiveStep={this.handleActiveStep}
@@ -688,7 +358,8 @@ class App extends Component {
                                 handleInSeal1={this.handleInSeal1}
                                 handleInSeal2={this.handleInSeal2}
                                 handleInNoOfBoxes={this.handleInNoOfBoxes}
-                                handleInLicNo={this.handleInLicNo}
+                                handleChangeInLicNo={this.handleChangeInLicNo}
+                                handleBlurInLicNo={this.handleBlurInLicNo}
                                 handleInMobNo={this.handleInMobNo}
                                 handleInDriverName={this.handleInDriverName}
                                 handleInProofType={this.handleInProofType}
@@ -731,6 +402,436 @@ class App extends Component {
 
     componentDidMount() {
       this.loadMasterData();
+    }
+
+    handleMasterData(data) {
+      this.setState({masterData: data});
+    }
+
+    handleTempMasterData(data) {
+      this.setState({tempMasterData: data});
+    }
+
+    updateSelectedIndex(index) {
+      this.setState({selectedIndex: index});
+    }
+
+    handleSearchVisible(visible) {
+      this.setState({search: visible});
+    }
+
+    updateSearchText(value) {
+      this.setState({searchText: value});
+    }
+
+    handleAPICall(path, method, callBack, data){
+      var payload = JSON.stringify(data);
+      this.setState({isLoading: true});
+      fetch(APIUrl + path, {
+            method: method,
+            headers: {
+                'Accept':'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: payload
+        })
+        .then(response => {
+          if(response.ok) {
+            return response.json(); 
+          }
+          else{
+            throw new Error("Something went wrong ...");
+          }
+        })
+        .then(data => {
+          this.setState({isLoading: false});
+          if(Array.isArray(data)){
+            callBack(data);
+          }
+          else if(typeof data === "object" && data.message !== undefined){
+            var btns = [{
+                text: "Ok",
+                event: () => {
+                  if(data.msgCode === "S"){
+                    callBack();
+                  }
+                  this.handleMsgDlg()                 
+                }
+            }];
+            this.handleMsgDlg(this.getTitle(data.msgCode), data.message, btns);
+          }          
+        })
+        .catch(error => {
+          this.setState({error, isLoading: false});
+          var btns = [{
+            text: 'Ok',
+            event: () => this.handleMsgDlg()
+          }]
+          this.handleMsgDlg("Error", error.message, btns);
+        })
+    }
+
+    loadMasterData(){
+      let that = this;
+      history.push("");
+      var fnResponse = function(data){
+        if(Array.isArray(data) && data.length > 0){
+          var sortedData = data.sort(function(a, b){
+            return b.VRN - a.VRN;
+          });
+          that.setState({masterData: sortedData, tempMasterData: sortedData});
+          that.loadDetailData(sortedData[0]);
+        }        
+      }
+      let path = "VRNMaster";
+      this.handleAPICall(path, "GET", fnResponse);
+    }
+
+    loadDetailData(vrn){
+      var that = this;
+      history.push("/detail/" + vrn.VRN);//for Routing to detail
+      this.handleTabChange(null,0);//for initially setting Arrival tab visible
+      var fnExpPanelChange = this.handleExpPanelChange((vrn.MODEOFTRANSPORT !== 'HD') ? 'panel1' : 'panel2');//for initially setting Vehicle panel visible
+      fnExpPanelChange(null, true);//calling the returned function
+      var fnDetailResponse = function(data){
+          if(Array.isArray(data) && data.length > 0){
+            that.updateDetailData(data);
+          }          
+      }
+      let path = "VRNDetail/";
+      this.handleAPICall(path + vrn.VRN, "GET", fnDetailResponse);
+    }
+
+    loadTransportModes() {
+      let that = this;
+      var callBack = function(data){
+          if(Array.isArray(data) && data.length > 0){
+            that.setState({
+              transportModes: data,
+              modeOfTransport: "RD",
+              inVehStat: "L",
+              inVehNo: "",
+              inFleetType: "",
+              inFleetTypeDesc: "",
+              inTransporter: "",
+              inTransporterDesc: "",
+              inSealCond: "I",
+              inSeal1: "",
+              inSeal2: "",
+              inNoOfBoxes: "",
+              inLicNo: "",
+              inMobNo: "",
+              inDriverName: "",
+              inProofType: "",
+              inProofNo: "",
+              inLRNo: "",
+              inRemarks: ""
+            });
+            that.loadTransporters();
+            that.loadProofTypes();
+          }          
+      }
+      let path = "VRNParam/TrnsprtMode";
+      this.handleAPICall(path, "GET", callBack);
+    }
+
+    loadTransporters() {
+      let that = this;
+      var transName = "TEST";
+      var callBack = function(data){
+          if(Array.isArray(data) && data.length > 0){
+              that.setState({ transporters: data });
+          }
+      }
+      let path = "VRNTransporters/";
+      this.handleAPICall(path + transName, "GET", callBack);
+    }
+
+    loadProofTypes() {
+      let that = this;
+      var callBack = function(data){
+          if(Array.isArray(data) && data.length > 0){
+              that.setState({ proofTypes: data });
+          }
+      }
+      let path = "VRNParam/IDProffList";
+      this.handleAPICall(path, "GET", callBack);
+    }
+
+    handleDrawerToggle() {
+        this.setState({ mobileOpen: !this.state.mobileOpen });
+    };
+
+    handleTabChange(event, value) {
+        this.setState({ tabValue: value });
+    }
+
+    updateDetailData(data) {
+        this.setState({
+          detailData: data, 
+          outVehStatus: "",
+          outNoOfBoxes: "",
+          outSealCond: "",
+          outPODRemarks: ""
+        });
+    }
+
+    handleExpPanelChange(panel){
+      var that = this;
+        return function(event, expanded) {
+          that.setState({ expanded : expanded ?  panel : false });
+      }
+    }
+
+    handleOutVehStat(event, value) {
+      this.setState({
+        outVehStatus: value        
+      });
+      if(value === "E") {
+        this.setState({
+          outNoOfBoxes: "",
+          outSealCond: ""
+        });
+      }
+    }
+
+    handleOutNoOfBoxes(event) {
+      var val = event.target.value;
+      if(val.length <= 6){
+        if(/^[0-9]+$/.test(val)){
+          this.setState({ outNoOfBoxes: val});
+        }
+        else{
+          this.setState({ outNoOfBoxes: ""});
+        }
+      }
+    }
+
+    handleOutSealCond(event, value) {
+      this.setState({ outSealCond: value});
+    }
+
+    handleOutPODRemarks(event) {
+      this.setState({ outPODRemarks: event.target.value });
+    }
+
+    handleMsgDlg(title, value, btns) {
+      const { messageDialogOpen } = this.state;
+      this.setState({
+        messageDialogOpen: !messageDialogOpen,
+        messageDialogTitle: title ? title : "",
+        messageDialogValue: value ? value : "",
+        messageDialogButtons: btns ? btns : []
+      });
+    }    
+
+    toggleSnackBar(msg){
+      const { snackBarOpen } = this.state;
+      this.setState({
+        snackBarOpen: !snackBarOpen,
+        snackBarMessage: (msg ? msg : "")
+      });
+    }    
+
+    handleMOTChange(event){
+      var val = event.target.value;
+      this.setState({
+        modeOfTransport: val, 
+        inVehStat: (val === "RD") ? "L": "",
+        inSealCond: (val === "RD") ? "I": "",
+      });
+    }
+
+    handleActiveStep(step) {
+      this.setState({activeStep: step});
+    }
+
+    handleStepperNext() {
+      const { activeStep } = this.state;
+      this.setState({activeStep: activeStep + 1});
+    }
+
+    handleStepperBack() {
+      const { activeStep } = this.state;
+      this.setState({activeStep: activeStep - 1});
+    }
+
+    handleInVehStat(event, value) {
+      this.setState({inVehStat: value});
+    }
+
+    handleChangeInVehNo(event) {
+      var val = event.target.value;
+      if(val.length <= 10){
+        this.setState({inVehNo: val});
+        this.inVehNoChanged = true;
+      }
+    }
+
+    handleBlurInVehNo(event){
+      const { inVehNo, modeOfTransport } = this.state;
+      if(inVehNo !== ""){
+        if(/^[A-Z]{2}[0-9]{1,3}(?:[A-Z])?(?:[A-Z]*)?[0-9]{1,4}$/.test(inVehNo)){
+          let that = this;
+          var fnResponse = function(data){
+            if(Array.isArray(data)){
+              if(data.length > 0){
+                that.setState({
+                  inFleetType: data[0].FleetType,
+                  inFleetTypeDesc: data[0].FleetTypeDesc,
+                  inTransporter: data[0].Vendor,
+                  inTransporterDesc: data[0].VendorName
+                });
+              }
+              else{
+                var fleetType = "", fleetTypeDesc = "";
+                switch(modeOfTransport){
+                  case "RD": fleetType = "M";
+                             fleetTypeDesc = "Market Vehicle";
+                             break;
+                  case "CA":
+                  case "CR": fleetType = "V";
+                             fleetTypeDesc = "Vendor Vehicle";
+                             break;
+                  case "RB": fleetType = "B";
+                             fleetTypeDesc = "Biker";
+                             break;
+                  default: fleetType = "";
+                           fleetTypeDesc = "";
+                }
+                that.setState({
+                  inFleetType: fleetType,
+                  inFleetTypeDesc: fleetTypeDesc,
+                  inTransporter: "",
+                  inTransporterDesc: ""
+                });
+              }
+            }
+            else{
+              that.setState({
+                inVehNo: "",
+                inFleetType: "",
+                inFleetTypeDesc: "",
+                inTransporter: "",
+                inTransporterDesc: ""
+              });
+            }
+          }
+          let path = "VRNVehicle/";
+          if(this.inVehNoChanged){
+            this.handleAPICall(path + inVehNo, "GET", fnResponse);
+            this.inVehNoChanged = false;
+          }
+        }
+        else{
+          this.setState({inVehNo: ""});
+          this.toggleSnackBar("Invalid vehicle number");
+        }
+      }      
+    }
+
+    handleInTransporter(event) {
+      var val = event.target.value;
+      const { transporters } = this.state;
+      var trans = transporters.filter((e) => e.Vendor === val);
+      this.setState({
+        inTransporter: trans[0].Vendor,
+        inTransporterDesc: trans[0].VendorName
+      });      
+    }
+
+    handleInSealCond(event, value) {
+      this.setState({inSealCond: value});
+    }
+
+    handleInSeal1(event) {
+      this.setState({inSeal1: event.target.value});
+    }
+
+    handleInSeal2(event) {
+      this.setState({inSeal2: event.target.value});
+    }
+
+    handleInNoOfBoxes(event) {
+      var val = event.target.value;
+      if(val.length <= 6){
+        if(/^[0-9]+$/.test(val)){
+          this.setState({ inNoOfBoxes: val});
+        }
+        else{
+          this.setState({ inNoOfBoxes: ""});
+        }
+      }      
+    }
+
+    handleChangeInLicNo(event) {
+      this.setState({inLicNo: event.target.value});
+    }
+
+    handleBlurInLicNo(event) {
+      const { inLicNo } = this.state;
+      if(inLicNo !== ""){
+        let that = this;
+        var fnResponse = function(data){
+          if(Array.isArray(data)){
+            if(data.length > 0){
+              that.setState({
+                inMobNo: data[0].Telephone,
+                inDriverName: data[0].Lastname
+              });
+            }
+          }
+          else{
+            that.setState({
+              inMobNo: "",
+              inDriverName: ""
+            });
+          }
+        }
+        let path = "License/";
+        if(this.inLicNoChanged){
+          this.handleAPICall(path + inLicNo, "GET", fnResponse);
+          this.inLicNoChanged = false;
+        }        
+      }
+    }
+
+    handleInMobNo(event) {
+      this.setState({inMobNo: event.target.value});
+    }
+
+    handleInDriverName(event) {
+      this.setState({inDriverName: event.target.value});
+    }
+
+    handleInProofType(event) {
+      var val = event.target.value;
+      const { proofTypes } = this.state;
+      var proof = proofTypes.filter((e) => e.modeNum === val);
+      this.setState({
+        inProofType: proof[0].modeNum,
+        inProofTypeDesc: proof[0].modeTxt
+      });
+    }
+
+    handleInProofNo(event) {
+      this.setState({inProofNo: event.target.value});
+    }
+
+    handleInLRNo(event) {
+      this.setState({inLRNo: event.target.value});
+    }
+
+    handleInRemarks(event) {
+      this.setState({inRemarks: event.target.value});
+    }
+
+    getTitle(code){
+      switch(code) {
+        case "S": return "Success";
+        case "E": return "Error";
+        default: return "Warning";
+      }
     }
 }
 

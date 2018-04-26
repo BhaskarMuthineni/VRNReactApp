@@ -9,8 +9,10 @@ var config = {
         filename: 'index.js'
     },
     devServer: {
+        historyApiFallback: true,//required when wanting to load application without any hashes like /detail/1
+        contentBase: './',
         inline: true,
-        host: '0.0.0.0',
+        host: '0.0.0.0',//required when running application with ip address
         port: 8080
     },
     module: {

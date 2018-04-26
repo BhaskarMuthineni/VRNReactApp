@@ -26,34 +26,6 @@ class Master extends Component {
         this.handleSearchText = this.handleSearchText.bind(this);
     }
 
-    handleListItemClick(vrn, key) {
-        var that = this;
-        return function(event){
-            that.props.handleDrawerToggle();
-            that.props.loadDetailData(vrn);
-            that.props.updateSelectedIndex(key);
-        }
-    }
-
-    handleSearchText(event) {
-        var val = event.target.value.toLowerCase();
-        this.props.updateSearchText(val);
-        if(val === ""){
-            this.props.handleMasterData(this.props.tempMasterData);
-        }
-        else{
-            var data = this.props.tempMasterData.filter(function(ele){
-                return (ele.VRN.toString().toLowerCase().indexOf(val) > -1) || (ele.VEHICLENUM.toLowerCase().indexOf(val) > -1);
-            });
-            this.props.handleMasterData(data);
-        }        
-    }
-
-    handleSearch() {
-        const { search } = this.props;
-        this.props.handleSearchVisible(!search);
-    }
-
     render() {
         const { classes, theme, masterData, search, selectedIndex } = this.props;
 
@@ -161,7 +133,35 @@ class Master extends Component {
                 </Hidden>
             </div>
         );        
-    }    
+    }
+    
+    handleListItemClick(vrn, key) {
+        var that = this;
+        return function(event){
+            that.props.handleDrawerToggle();
+            that.props.loadDetailData(vrn);
+            that.props.updateSelectedIndex(key);
+        }
+    }
+
+    handleSearchText(event) {
+        var val = event.target.value.toLowerCase();
+        this.props.updateSearchText(val);
+        if(val === ""){
+            this.props.handleMasterData(this.props.tempMasterData);
+        }
+        else{
+            var data = this.props.tempMasterData.filter(function(ele){
+                return (ele.VRN.toString().toLowerCase().indexOf(val) > -1) || (ele.VEHICLENUM.toLowerCase().indexOf(val) > -1);
+            });
+            this.props.handleMasterData(data);
+        }        
+    }
+
+    handleSearch() {
+        const { search } = this.props;
+        this.props.handleSearchVisible(!search);
+    }
 }
 
 export default Master;
