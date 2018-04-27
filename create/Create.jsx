@@ -13,24 +13,22 @@ import { MenuItem } from 'material-ui/Menu';
 import Select from 'material-ui/Select';
 import Stepper, { Step, StepLabel } from 'material-ui/Stepper';
 import Button from 'material-ui/Button';
+import LicenseDialog from '../dialog/LicenseDialog.jsx';
 
 class Create extends Component {
     constructor(props) {
         super(props);
-        this.handleReportIn = this.handleReportIn.bind(this);
-        this.handleCheckIn = this.handleCheckIn.bind(this);
+        this.postVRN = this.postVRN.bind(this);
+
+        this.steps = ['Vehicle', 'Driver', 'Done'];
     }
 
     render() {
-        const { classes, theme, activeStep, controlsVisibility, modeOfTransport } = this.props;
-
-        const steps = [];
+        const { classes, theme, activeStep, controlsVisibility, modeOfTransport } = this.props;        
         
-        if(modeOfTransport !== "HD"){
-            steps.push('Vehicle');            
+        if(modeOfTransport === "HD"){
+            this.steps.splice(this.steps.indexOf("Vehicle"), 1);
         }
-        steps.push('Driver');
-        steps.push('Done');
 
          return(
             <div style={{ width: '100%' }}>
@@ -71,7 +69,7 @@ class Create extends Component {
                         this.props.transportModes.length > 0 &&
                         <Stepper activeStep={this.props.activeStep}>
                         {
-                            steps.map((label, index) => 
+                            this.steps.map((label, index) => 
                                 <Step key={label}>
                                     <StepLabel>{label}</StepLabel>
                                 </Step>
@@ -81,7 +79,7 @@ class Create extends Component {
                     }                    
                     <div>
                     {   
-                        this.props.transportModes.length > 0 && steps.indexOf("Vehicle") === activeStep &&
+                        this.props.transportModes.length > 0 && this.steps.indexOf("Vehicle") === activeStep &&
                         <div>
                             <form className={classes.container} noValidate autoComplete="off">                                    
                                 {
@@ -110,6 +108,8 @@ class Create extends Component {
                                     margin="normal"
                                     onChange={this.props.handleChangeInVehNo}
                                     onBlur={this.props.handleBlurInVehNo}
+                                    required
+                                    error={this.props.errInVehNo}
                                     />
                                 }
                                 {
@@ -125,7 +125,11 @@ class Create extends Component {
                                 }
                                 {
                                     controlsVisibility["transName"][modeOfTransport] &&                                     
-                                    <FormControl className={classes.formControl}>
+                                    <FormControl
+                                        className={classes.formControl}
+                                        required
+                                        error={this.props.errInTrans}
+                                    >
                                         <InputLabel htmlFor="transporter">Transporter/Agency Name</InputLabel>
                                         <Select
                                             value={this.props.inTransporter}
@@ -200,7 +204,7 @@ class Create extends Component {
                         </div>
                     }
                     {
-                        this.props.transportModes.length > 0 && steps.indexOf("Driver") === activeStep &&
+                        this.props.transportModes.length > 0 && this.steps.indexOf("Driver") === activeStep &&
                         <div>
                             <form className={classes.container} noValidate autoComplete="off">                                    
                                 {
@@ -213,6 +217,8 @@ class Create extends Component {
                                     margin="normal"
                                     onChange={this.props.handleChangeInLicNo}
                                     onBlur={this.props.handleBlurInLicNo}
+                                    required
+                                    error={this.props.errInLicNo}
                                     />
                                 }
                                 {
@@ -224,6 +230,8 @@ class Create extends Component {
                                     value={this.props.inMobNo}
                                     margin="normal"
                                     onChange={this.props.handleInMobNo}
+                                    required
+                                    error={this.props.errInMobNo}
                                     />
                                 }
                                 {
@@ -235,11 +243,17 @@ class Create extends Component {
                                     value={this.props.inDriverName}
                                     margin="normal"
                                     onChange={this.props.handleInDriverName}
+                                    required
+                                    error={this.props.errInDriverName}
                                     />
                                 }
                                 {
                                     controlsVisibility["idProof"][modeOfTransport] &&                                    
-                                    <FormControl className={classes.formControl}>
+                                    <FormControl
+                                        className={classes.formControl}
+                                        required
+                                        error={this.props.errInProofType}
+                                    >
                                         <InputLabel htmlFor="proofType">ID Proof Type</InputLabel>
                                         <Select
                                             value={this.props.inProofType}
@@ -265,12 +279,14 @@ class Create extends Component {
                                     value={this.props.inProofNo}
                                     margin="normal"
                                     onChange={this.props.handleInProofNo}
+                                    required
+                                    error={this.props.errInProofNo}
                                     />
                                 }
                             </form>
                             <div>
                                 {
-                                    steps.indexOf("Driver") !== 0 &&
+                                    this.steps.indexOf("Driver") !== 0 &&
                                     <Button variant="raised" onClick={this.props.handleStepperBack} className={classes.stepperButton}>
                                         Back
                                     </Button>
@@ -282,7 +298,7 @@ class Create extends Component {
                         </div>
                     }
                     {
-                        this.props.transportModes.length > 0 && steps.indexOf("Done") === activeStep &&
+                        this.props.transportModes.length > 0 && this.steps.indexOf("Done") === activeStep &&
                         <div>
                             <form className={classes.container} noValidate autoComplete="off">                              
                                 {
@@ -311,64 +327,124 @@ class Create extends Component {
                                 <Button variant="raised" onClick={this.props.handleStepperBack} className={classes.stepperButton}>
                                     Back
                                 </Button>                                
-                                <Button variant="raised" color="secondary" onClick={this.handleReportIn} className={classes.stepperButton}>
+                                <Button variant="raised" color="secondary" onClick={() => this.postVRN() } className={classes.stepperButton}>
                                     Report-In
                                 </Button>
-                                <Button variant="raised" color="primary" onClick={this.handleCheckIn} className={classes.stepperButton}>
+                                <Button variant="raised" color="primary" onClick={() => this.postVRN(true)} className={classes.stepperButton}>
                                     Check-In
                                 </Button>
                             </div>
                         </div>
                     }
                     </div>
+                    <LicenseDialog
+                        classes={{
+                            paper: classes.dialog
+                        }}
+                        classes={classes}
+                        theme={theme}
+                        open={this.props.licenseDialogOpen}
+                        inLicNo={this.props.inLicNo}
+                        licenseValidUpto={this.props.licenseValidUpto}
+                        licenseDriverName={this.props.licenseDriverName}
+                        licenseMobileNo={this.props.licenseMobileNo}
+                        licenseRegionCode={this.props.licenseRegionCode}
+                        handleLicenseValidUpto={this.props.handleLicenseValidUpto}
+                        handleLicenseDriverName={this.props.handleLicenseDriverName}
+                        handleLicenseMobileNo={this.props.handleLicenseMobileNo}
+                        handleLicenseRegionCode={this.props.handleLicenseRegionCode}
+                        licenseRegions={this.props.licenseRegions}
+                        loadLicenseRegions={this.props.loadLicenseRegions}
+                        handleLicenseDialogClose={this.props.handleLicenseDialogClose}
+                        handleAPICall={this.props.handleAPICall}
+                        toggleSnackBar={this.props.toggleSnackBar}
+                        errValidUpto={this.props.errValidUpto}
+                        errDriverName={this.props.errDriverName}
+                        errMobNo={this.props.errMobNo}
+                        errRegionCode={this.props.errRegionCode}
+                        updateErrLicValidUpto={this.props.updateErrLicValidUpto}
+                        updateErrLicDriverName={this.props.updateErrLicDriverName}
+                        updateErrLicMobileNo={this.props.updateErrLicMobileNo}
+                        updateErrLicRegionCode={this.props.updateErrLicRegionCode}
+                    />
                 </main>
             </div>
          );
      }
 
-     componentDidMount(){
+    componentDidMount(){
         this.props.loadTransportModes();
-     }
-
-     handleReportIn() {
-        // if(that.props.controlsVisibility["outVehStat"][vrn.MODEOFTRANSPORT] && that.props.outVehStatus === ""){
-        //     that.props.toggleSnackBar("Select Vehicle Status");
-        // }
-        // else{
-            
-        //}
-        this.postVRN();
-    }
-
-    handleCheckIn() {
-        this.postVRN(true);
     }
 
     postVRN(checkIn) {
-        var data = {
-            MODEOFTRANSPORT: this.props.modeOfTransport,
-            VEHICLESTATUS: this.props.inVehStat,
-            VEHICLENUM: this.props.inVehNo,
-            FLEETTYPE: this.props.inFleetTypeDesc,
-            FLEETTYPECODE: this.props.inFleetType,
-            TRANSPORTER: this.props.inTransporterDesc,
-            TRANSPORTERCODE: this.props.inTransporter,
-            SEALCONDITION: this.props.inSealCond,
-            SEAL1: this.props.inSeal1,
-            SEAL2: this.props.inSeal2,
-            NUMOFBOXES: this.props.inNoOfBoxes,
-            LICENSENUM: this.props.inLicNo,
-            DRIVERNUM: this.props.inMobNo,
-            DRIVERNAME: this.props.inDriverName,
-            IDPROOFTYPE: this.props.inProofType,
-            IDPROOFNUM: this.props.inProofNo,
-            LRNUM: this.props.inLRNo,
-            REMARKS: this.props.inRemarks,
-            VRNSTATUS: (checkIn) ? "C" : "R",
-            CHECKINOUT: "I"
-        };
-        let path = "VRNMaster";
-        this.props.handleAPICall(path, "POST", () => this.props.loadMasterData(), data);
+        if(this.props.controlsVisibility["vehNo"][this.props.modeOfTransport] &&
+            this.props.inVehNo === ""){
+            this.props.handleActiveStep(this.steps.indexOf("Vehicle"));
+            this.props.toggleSnackBar("Enter Vehicle Number");
+            this.props.updateErrInVehNo(true);
+        }
+        else if(this.props.controlsVisibility["transName"][this.props.modeOfTransport] &&
+            this.props.inTransporter === ""){
+            this.props.handleActiveStep(this.steps.indexOf("Vehicle"));
+            this.props.toggleSnackBar("Select Transporter/Agency");
+            this.props.updateErrInTrans(true);
+        }
+        else if(this.props.controlsVisibility["licNo"][this.props.modeOfTransport] &&
+            this.props.inLicNo === ""){
+            this.props.handleActiveStep(this.steps.indexOf("Driver"));
+            this.props.toggleSnackBar("Enter License Number");
+            this.props.updateErrInLicNo(true);
+        }
+        else if(this.props.controlsVisibility["mobNo"][this.props.modeOfTransport] &&
+            this.props.inMobNo === ""){
+            this.props.handleActiveStep(this.steps.indexOf("Driver"));
+            this.props.toggleSnackBar("Enter Mobile Number");
+            this.props.updateErrInMobNo(true);
+        }
+        else if(this.props.controlsVisibility["personName"][this.props.modeOfTransport] &&
+            this.props.inDriverName === ""){
+            this.props.handleActiveStep(this.steps.indexOf("Driver"));
+            this.props.toggleSnackBar("Enter Driver/Pickup Person Name");
+            this.props.updateErrInDriverName(true);
+        }
+        else if(this.props.controlsVisibility["idProof"][this.props.modeOfTransport] &&
+            this.props.inProofType === ""){
+            this.props.handleActiveStep(this.steps.indexOf("Driver"));
+            this.props.toggleSnackBar("Select ID Proof Type");
+            this.props.updateErrInProofType(true);
+        }
+        else if(this.props.controlsVisibility["idProof"][this.props.modeOfTransport] &&
+            this.props.inProofNo === ""){
+            this.props.handleActiveStep(this.steps.indexOf("Driver"));
+            this.props.toggleSnackBar("Enter ID Proof Number");
+            this.props.updateErrInProofNo(true);
+        }
+        else{
+            var data = {
+                MODEOFTRANSPORT: this.props.modeOfTransport,
+                VEHICLESTATUS: this.props.inVehStat,
+                VEHICLENUM: this.props.inVehNo,
+                FLEETTYPE: this.props.inFleetTypeDesc,
+                FLEETTYPECODE: this.props.inFleetType,
+                TRANSPORTER: this.props.inTransporterDesc,
+                TRANSPORTERCODE: this.props.inTransporter,
+                SEALCONDITION: this.props.inSealCond,
+                SEAL1: this.props.inSeal1,
+                SEAL2: this.props.inSeal2,
+                NUMOFBOXES: this.props.inNoOfBoxes,
+                LICENSENUM: this.props.inLicNo,
+                DRIVERNUM: this.props.inMobNo,
+                DRIVERNAME: this.props.inDriverName,
+                IDPROOFTYPE: this.props.inProofType,
+                IDPROOFNUM: this.props.inProofNo,
+                LRNUM: this.props.inLRNo,
+                REMARKS: this.props.inRemarks,
+                VRNSTATUS: (checkIn) ? "C" : "R",
+                CHECKINOUT: "I"
+            };
+            let path = "VRNMaster";
+            this.props.handleAPICall(path, "POST", () => this.props.loadMasterData(), data);
+        }
     }
 }
 

@@ -193,7 +193,25 @@ class App extends Component {
             inProofType: "",
             inProofNo: "",
             inLRNo: "",
-            inRemarks: ""
+            inRemarks: "",
+            licenseDialogOpen: false,
+            licenseValidUpto: "",
+            licenseDriverName: "",
+            licenseMobileNo: "",
+            licenseRegionCode: "",
+            licenseRegions: [],
+            errValidUpto: false,
+            errDriverName: false,
+            errMobNo: false,
+            errRegionCode: false,
+            errOutVehStat: false,
+            errInVehNo: false,
+            errInTrans: false,
+            errInLicNo: false,
+            errInMobNo: false,
+            errInDriverName: false,
+            errInProofType: false,
+            errInProofNo: false
         };
 
         this.handleMasterData = this.handleMasterData.bind(this);
@@ -206,6 +224,7 @@ class App extends Component {
         this.loadTransportModes = this.loadTransportModes.bind(this);
         this.loadTransporters = this.loadTransporters.bind(this);
         this.loadProofTypes = this.loadProofTypes.bind(this);
+        this.loadLicenseRegions = this.loadLicenseRegions.bind(this);
         this.updateSelectedIndex = this.updateSelectedIndex.bind(this);
         this.handleDrawerToggle = this.handleDrawerToggle.bind(this);
         this.handleTabChange = this.handleTabChange.bind(this);
@@ -243,6 +262,27 @@ class App extends Component {
         this.handleInLRNo = this.handleInLRNo.bind(this);
         this.handleInRemarks = this.handleInRemarks.bind(this);
 
+        this.handleLicenseValidUpto = this.handleLicenseValidUpto.bind(this);
+        this.handleLicenseDriverName = this.handleLicenseDriverName.bind(this);
+        this.handleLicenseMobileNo = this.handleLicenseMobileNo.bind(this);
+        this.handleLicenseRegionCode = this.handleLicenseRegionCode.bind(this);
+        this.handleLicenseDialogClose = this.handleLicenseDialogClose.bind(this);
+
+        this.updateErrLicValidUpto = this.updateErrLicValidUpto.bind(this);
+        this.updateErrLicDriverName = this.updateErrLicDriverName.bind(this);
+        this.updateErrLicMobileNo = this.updateErrLicMobileNo.bind(this);
+        this.updateErrLicRegionCode = this.updateErrLicRegionCode.bind(this);
+
+        this.updateErrOutVehStat = this.updateErrOutVehStat.bind(this);
+
+        this.updateErrInVehNo = this.updateErrInVehNo.bind(this);
+        this.updateErrInTrans = this.updateErrInTrans.bind(this);
+        this.updateErrInLicNo = this.updateErrInLicNo.bind(this);
+        this.updateErrInMobNo = this.updateErrInMobNo.bind(this);
+        this.updateErrInDriverName = this.updateErrInDriverName.bind(this);
+        this.updateErrInProofType = this.updateErrInProofType.bind(this);
+        this.updateErrInProofNo =  this.updateErrInProofNo.bind(this);
+
         this.inVehNoChanged = false;
         this.inLicNoChanged = false;
     }
@@ -278,13 +318,14 @@ class App extends Component {
                                   handleSearchVisible={this.handleSearchVisible}
                                   searchText={this.state.searchText}
                                   updateSearchText={this.updateSearchText}
+                                  handleActiveStep={this.handleActiveStep}
                                   {...props} />} />
                   <Route 
                     exact 
                     path='/detail/:id' 
                     render={
                       (props) => <Detail 
-                                  classes={classes} 
+                                  classes={classes}
                                   theme={theme}
                                   handleAPICall={this.handleAPICall}
                                   loadMasterData={this.loadMasterData}
@@ -307,6 +348,8 @@ class App extends Component {
                                   handleOutPODRemarks={this.handleOutPODRemarks}
                                   handleMsgDlg={this.handleMsgDlg}
                                   toggleSnackBar={this.toggleSnackBar}
+                                  errOutVehStat={this.state.errOutVehStat}
+                                  updateErrOutVehStat={this.updateErrOutVehStat}
                                   {...props} 
                                   />} 
                   />
@@ -333,8 +376,8 @@ class App extends Component {
                                 handleActiveStep={this.handleActiveStep}
                                 handleStepperNext={this.handleStepperNext}
                                 handleStepperBack={this.handleStepperBack}
-                                inVehStat={this.state.inVehStat}                                
-                                inVehNo={this.state.inVehNo}                                
+                                inVehStat={this.state.inVehStat}
+                                inVehNo={this.state.inVehNo}             
                                 inFleetType={this.state.inFleetType}
                                 inFleetTypeDesc={this.state.inFleetTypeDesc}
                                 inTransporter={this.state.inTransporter}
@@ -366,6 +409,40 @@ class App extends Component {
                                 handleInProofNo={this.handleInProofNo}
                                 handleInLRNo={this.handleInLRNo}
                                 handleInRemarks={this.handleInRemarks}
+                                licenseDialogOpen={this.state.licenseDialogOpen}
+                                licenseValidUpto={this.state.licenseValidUpto}
+                                licenseDriverName={this.state.licenseDriverName}
+                                licenseMobileNo={this.state.licenseMobileNo}
+                                licenseRegionCode={this.state.licenseRegionCode}
+                                handleLicenseValidUpto={this.handleLicenseValidUpto}
+                                handleLicenseDriverName={this.handleLicenseDriverName}
+                                handleLicenseMobileNo={this.handleLicenseMobileNo}
+                                handleLicenseRegionCode={this.handleLicenseRegionCode}
+                                licenseRegions={this.state.licenseRegions}
+                                loadLicenseRegions={this.loadLicenseRegions}
+                                handleLicenseDialogClose={this.handleLicenseDialogClose}
+                                errValidUpto={this.state.errValidUpto}
+                                errDriverName={this.state.errDriverName}
+                                errMobNo={this.state.errMobNo}
+                                errRegionCode={this.state.errRegionCode}
+                                updateErrLicValidUpto={this.updateErrLicValidUpto}
+                                updateErrLicDriverName={this.updateErrLicDriverName}
+                                updateErrLicMobileNo={this.updateErrLicMobileNo}
+                                updateErrLicRegionCode={this.updateErrLicRegionCode}
+                                errInVehNo={this.state.errInVehNo}
+                                errInTrans={this.state.errInTrans}
+                                errInLicNo={this.state.errInLicNo}
+                                errInMobNo={this.state.errInMobNo}
+                                errInDriverName={this.state.errInDriverName}
+                                errInProofType={this.state.errInProofType}
+                                errInProofNo={this.state.errInProofNo}
+                                updateErrInVehNo={this.updateErrInVehNo}
+                                updateErrInTrans={this.updateErrInTrans}
+                                updateErrInLicNo={this.updateErrInLicNo}
+                                updateErrInMobNo={this.updateErrInMobNo}
+                                updateErrInDriverName={this.updateErrInDriverName}
+                                updateErrInProofType={this.updateErrInProofType}
+                                updateErrInProofNo={this.updateErrInProofNo}
                                 {...props}
                                 />} 
                   />
@@ -440,7 +517,7 @@ class App extends Component {
             return response.json(); 
           }
           else{
-            throw new Error("Something went wrong ...");
+            throw new Error(response.statusText);
           }
         })
         .then(data => {
@@ -479,7 +556,11 @@ class App extends Component {
           var sortedData = data.sort(function(a, b){
             return b.VRN - a.VRN;
           });
-          that.setState({masterData: sortedData, tempMasterData: sortedData});
+          that.setState({
+            masterData: sortedData,
+            tempMasterData: sortedData,
+            selectedIndex: 0
+          });
           that.loadDetailData(sortedData[0]);
         }        
       }
@@ -488,8 +569,7 @@ class App extends Component {
     }
 
     loadDetailData(vrn){
-      var that = this;
-      history.push("/detail/" + vrn.VRN);//for Routing to detail
+      var that = this;      
       this.handleTabChange(null,0);//for initially setting Arrival tab visible
       var fnExpPanelChange = this.handleExpPanelChange((vrn.MODEOFTRANSPORT !== 'HD') ? 'panel1' : 'panel2');//for initially setting Vehicle panel visible
       fnExpPanelChange(null, true);//calling the returned function
@@ -500,62 +580,86 @@ class App extends Component {
       }
       let path = "VRNDetail/";
       this.handleAPICall(path + vrn.VRN, "GET", fnDetailResponse);
+      history.push("/detail/" + vrn.VRN);//for Routing to detail
     }
 
     loadTransportModes() {
-      let that = this;
-      var callBack = function(data){
+      if(this.state.transportModes.length === 0){
+        let that = this;
+        var callBack = function(data){
           if(Array.isArray(data) && data.length > 0){
             that.setState({
-              transportModes: data,
-              modeOfTransport: "RD",
-              inVehStat: "L",
-              inVehNo: "",
-              inFleetType: "",
-              inFleetTypeDesc: "",
-              inTransporter: "",
-              inTransporterDesc: "",
-              inSealCond: "I",
-              inSeal1: "",
-              inSeal2: "",
-              inNoOfBoxes: "",
-              inLicNo: "",
-              inMobNo: "",
-              inDriverName: "",
-              inProofType: "",
-              inProofNo: "",
-              inLRNo: "",
-              inRemarks: ""
+              transportModes: data              
             });
             that.loadTransporters();
             that.loadProofTypes();
-          }          
+          }
+        }
+        let path = "VRNParam/TrnsprtMode";
+        this.handleAPICall(path, "GET", callBack);
       }
-      let path = "VRNParam/TrnsprtMode";
-      this.handleAPICall(path, "GET", callBack);
+      else{
+        this.loadTransporters();
+        this.loadProofTypes();
+      }
+      this.setState({
+        modeOfTransport: "RD",
+        inVehStat: "L",
+        inVehNo: "",
+        inFleetType: "",
+        inFleetTypeDesc: "",
+        inTransporter: "",
+        inTransporterDesc: "",
+        inSealCond: "I",
+        inSeal1: "",
+        inSeal2: "",
+        inNoOfBoxes: "",
+        inLicNo: "",
+        inMobNo: "",
+        inDriverName: "",
+        inProofType: "",
+        inProofNo: "",
+        inLRNo: "",
+        inRemarks: ""
+      });
     }
 
     loadTransporters() {
       let that = this;
-      var transName = "TEST";
+      //var transName = "";
       var callBack = function(data){
           if(Array.isArray(data) && data.length > 0){
               that.setState({ transporters: data });
           }
       }
-      let path = "VRNTransporters/";
-      this.handleAPICall(path + transName, "GET", callBack);
+      let path = "VRNTransporters";
+      this.handleAPICall(path, "GET", callBack);// + transName
     }
 
     loadProofTypes() {
       let that = this;
-      var callBack = function(data){
+      if(this.state.proofTypes.length === 0){
+        var callBack = function(data){
           if(Array.isArray(data) && data.length > 0){
               that.setState({ proofTypes: data });
           }
+        }
+        let path = "VRNParam/IDProffList";
+        this.handleAPICall(path, "GET", callBack);
+      }      
+    }
+
+    loadLicenseRegions() {
+      let that = this;
+      if(this.state.licenseRegions.length === 0){
+        var callBack = function(data){
+          if(Array.isArray(data) && data.length > 0){
+              that.setState({ licenseRegions: data });
+          }
+        }
+        let path = "LicenseRegion";
+        this.handleAPICall(path, "GET", callBack);
       }
-      let path = "VRNParam/IDProffList";
-      this.handleAPICall(path, "GET", callBack);
     }
 
     handleDrawerToggle() {
@@ -584,6 +688,7 @@ class App extends Component {
     }
 
     handleOutVehStat(event, value) {
+      this.updateErrOutVehStat(false);
       this.setState({
         outVehStatus: value        
       });
@@ -612,7 +717,10 @@ class App extends Component {
     }
 
     handleOutPODRemarks(event) {
-      this.setState({ outPODRemarks: event.target.value });
+      var val = event.target.value;
+      if(val.length <= 40){
+        this.setState({outPODRemarks: val});
+      }
     }
 
     handleMsgDlg(title, value, btns) {
@@ -661,6 +769,7 @@ class App extends Component {
     }
 
     handleChangeInVehNo(event) {
+      this.updateErrInVehNo(false);
       var val = event.target.value;
       if(val.length <= 10){
         this.setState({inVehNo: val});
@@ -731,12 +840,13 @@ class App extends Component {
     }
 
     handleInTransporter(event) {
+      this.updateErrInTrans(false);
       var val = event.target.value;
       const { transporters } = this.state;
       var trans = transporters.filter((e) => e.Vendor === val);
       this.setState({
         inTransporter: trans[0].Vendor,
-        inTransporterDesc: trans[0].VendorName
+        inTransporterDesc: trans[0].Name1
       });      
     }
 
@@ -745,11 +855,17 @@ class App extends Component {
     }
 
     handleInSeal1(event) {
-      this.setState({inSeal1: event.target.value});
+      var val = event.target.value;
+      if(val.length <= 15){
+        this.setState({inSeal1: val});
+      }
     }
 
     handleInSeal2(event) {
-      this.setState({inSeal2: event.target.value});
+      var val = event.target.value;
+      if(val.length <= 15){
+        this.setState({inSeal2: val});
+      }
     }
 
     handleInNoOfBoxes(event) {
@@ -765,7 +881,12 @@ class App extends Component {
     }
 
     handleChangeInLicNo(event) {
-      this.setState({inLicNo: event.target.value});
+      this.updateErrInLicNo(false);
+      var val = event.target.value;
+      if(val.length <= 20){
+        this.setState({inLicNo: val});
+        this.inLicNoChanged = true;
+      }      
     }
 
     handleBlurInLicNo(event) {
@@ -780,13 +901,14 @@ class App extends Component {
                 inDriverName: data[0].Lastname
               });
             }
-          }
-          else{
-            that.setState({
-              inMobNo: "",
-              inDriverName: ""
-            });
-          }
+            else{
+              that.setState({licenseDialogOpen: true});
+              that.setState({
+                inMobNo: "",
+                inDriverName: ""
+              });
+            }
+          }          
         }
         let path = "License/";
         if(this.inLicNoChanged){
@@ -797,14 +919,31 @@ class App extends Component {
     }
 
     handleInMobNo(event) {
-      this.setState({inMobNo: event.target.value});
+      this.updateErrInMobNo(false);
+      if(val.length <= 10){
+        if(/^[0-9]+$/.test(val)){
+          this.setState({inMobNo: val});
+        }
+        else{
+          this.setState({inMobNo: ""});
+        }        
+      }
     }
 
     handleInDriverName(event) {
-      this.setState({inDriverName: event.target.value});
+      this.updateErrInDriverName(false);
+      if(val.length <= 35){
+        if(/^[A-Za-z0-9 ]+$/.test(val)){
+          this.setState({inDriverName: val});
+        }
+        else{
+          this.setState({inDriverName: ""});
+        }
+      }
     }
 
     handleInProofType(event) {
+      this.updateErrInProofType(false);
       var val = event.target.value;
       const { proofTypes } = this.state;
       var proof = proofTypes.filter((e) => e.modeNum === val);
@@ -815,15 +954,25 @@ class App extends Component {
     }
 
     handleInProofNo(event) {
-      this.setState({inProofNo: event.target.value});
+      this.updateErrInProofNo(false);
+      var val = event.target.value;
+      if(val.length <= 15){
+        this.setState({inProofNo: val});
+      }
     }
 
     handleInLRNo(event) {
-      this.setState({inLRNo: event.target.value});
+      var val = event.target.value;
+      if(val.length <= 15){
+        this.setState({inLRNo: val});
+      }      
     }
 
     handleInRemarks(event) {
-      this.setState({inRemarks: event.target.value});
+      var val = event.target.value;
+      if(val.length <= 40){
+        this.setState({inRemarks: val});
+      }
     }
 
     getTitle(code){
@@ -832,6 +981,102 @@ class App extends Component {
         case "E": return "Error";
         default: return "Warning";
       }
+    }
+
+    handleLicenseValidUpto(event) {
+      this.updateErrLicValidUpto(false);
+      this.setState({licenseValidUpto: event.target.value});
+    }
+  
+    handleLicenseDriverName(event) {
+      this.updateErrLicDriverName(false);
+      var val = event.target.value.trim();
+      if(val.length <= 35){
+        if(/^[A-Za-z0-9 ]+$/.test(val)){
+          this.setState({licenseDriverName: val});
+        }
+        else{
+          this.setState({licenseDriverName: ""});
+        }
+      }
+    }
+
+    handleLicenseMobileNo(event) {
+      this.updateErrLicMobileNo(false);
+      var val = event.target.value;
+      if(val.length <= 10){
+        if(/^[0-9]+$/.test(val)){
+          this.setState({licenseMobileNo: val});
+        }
+        else{
+          this.setState({licenseMobileNo: ""});
+        }        
+      }
+    }
+
+    handleLicenseRegionCode(event) {
+      this.updateErrLicRegionCode(false);
+      this.setState({licenseRegionCode: event.target.value});
+    }
+
+    handleLicenseDialogClose(mobNo, driverName) {
+      this.setState({
+        licenseDialogOpen: false,
+        licenseValidUpto: "",
+        licenseDriverName: "",
+        licenseMobileNo: "",
+        licenseRegionCode: "",
+        inMobNo: (mobNo) ? mobNo: "",
+        inDriverName: (driverName) ? driverName : ""
+      });
+    }
+
+    updateErrLicValidUpto(flag) {
+      this.setState({errValidUpto: flag});
+    }
+
+    updateErrLicDriverName(flag) {
+      this.setState({errDriverName: flag});
+    }
+
+    updateErrLicMobileNo(flag) {
+      this.setState({errMobNo: flag});
+    }
+
+    updateErrLicRegionCode(flag) {
+      this.setState({errRegionCode: flag});
+    }
+
+    updateErrOutVehStat(flag) {
+      this.setState({errOutVehStat: flag});
+    }
+
+    updateErrInVehNo(flag) {
+      this.setState({errInVehNo: flag});
+    }
+
+    updateErrInTrans(flag) {
+      this.setState({errInTrans: flag});
+    }
+
+    updateErrInLicNo(flag) {
+      this.setState({errInLicNo: flag});
+    }
+
+    updateErrInMobNo(flag) {
+      this.setState({errInMobNo: flag});
+    }
+
+    updateErrInDriverName(flag) {
+      this.setState({errInDriverName: flag});
+    }
+
+    updateErrInProofType(flag) {
+      this.setState({errInProofType: flag});
+    }
+
+    updateErrInProofNo(flag) {
+      this.setState({errInProofNo: flag});
     }
 }
 

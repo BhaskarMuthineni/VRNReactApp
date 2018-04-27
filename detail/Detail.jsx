@@ -278,13 +278,23 @@ class Detail extends Component {
                                 <form className={classes.container} noValidate autoComplete="off">
                                     {
                                         visibility["outVehStat"][vrnData[0].MODEOFTRANSPORT] &&
-                                        <FormControl component="fieldset" required className={classes.formControl}>
+                                        <FormControl
+                                            component="fieldset"
+                                            required
+                                            className={classes.formControl}
+                                            error={this.props.errOutVehStat}
+                                        >
                                             <FormLabel component="legend">Vehicle Status</FormLabel>
-                                            <RadioGroup aria-label="Vehicle Status" name="VehStat" className={classes.group} value={this.props.outVehStatus} onChange={this.props.handleOutVehStat}>
+                                            <RadioGroup
+                                                aria-label="Vehicle Status"
+                                                name="VehStat"
+                                                className={classes.group}
+                                                value={this.props.outVehStatus}
+                                                onChange={this.props.handleOutVehStat}                                                
+                                            >
                                                 <FormControlLabel value="L" control={<Radio />} label="Loaded"/>
                                                 <FormControlLabel value="E" control={<Radio />} label="Empty"/>
                                             </RadioGroup>
-                                            {/* <FormHelperText>Select an option</FormHelperText> */}
                                         </FormControl>
                                     }
                                     {
@@ -366,6 +376,7 @@ class Detail extends Component {
                 }
                 if(that.props.controlsVisibility["outVehStat"][vrn.MODEOFTRANSPORT] && that.props.outVehStatus === ""){
                     that.props.toggleSnackBar("Select Vehicle Status");
+                    that.props.updateErrOutVehStat(true);
                 }
                 else{
                     var data = {

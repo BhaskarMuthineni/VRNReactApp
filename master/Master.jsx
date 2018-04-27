@@ -17,6 +17,7 @@ import SearchIcon from 'material-ui-icons/Search';
 import { Link } from 'react-router-dom';
 import CheckCircleIcon from 'material-ui-icons/CheckCircle';
 import TextField from 'material-ui/TextField';
+import history from '../history';
 
 class Master extends Component {
     constructor(props) {
@@ -94,11 +95,20 @@ class Master extends Component {
                         )
                     }                    
                 </List>
-                <Link to={'/create'}>
-                    <Button variant="fab" mini color="primary" aria-label="add" className={classes.button}>
-                        <AddIcon />
-                    </Button>
-                </Link>
+                <Button
+                    variant="fab"
+                    mini
+                    color="primary"
+                    aria-label="add"
+                    className={classes.button}
+                    onClick={() => {
+                            history.push("/create");
+                            this.props.handleActiveStep(0);
+                        }
+                    }
+                >
+                    <AddIcon />
+                </Button>
             </div>
           );
 
