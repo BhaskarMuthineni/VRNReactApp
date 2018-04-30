@@ -45,7 +45,7 @@ class Master extends Component {
                     <TextField
                     id="search"
                     label="Search"
-                    className={classes.textField}
+                    className={classes.searchTextField}
                     value={this.props.searchText}
                     onChange={this.handleSearchText}
                     margin="normal"
@@ -78,7 +78,7 @@ class Master extends Component {
                                 (vrn.MODEOFTRANSPORT === "RB" ? <DirectionsBikeIcon color="primary"/> :
                                 (vrn.MODEOFTRANSPORT === "RD" ? <LocalShippingIcon color="primary"/> : <WarningIcon color="primary"/>)))) }
                             </ListItemIcon>
-                            <ListItemText
+                            <ListItemText className={classes.listItemText}
                             primary={"VRN No.: " + vrn.VRN}
                             secondary={
                                 (vrn.MODEOFTRANSPORT === "HD") ? 

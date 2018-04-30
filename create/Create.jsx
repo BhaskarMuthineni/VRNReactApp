@@ -47,7 +47,7 @@ class Create extends Component {
                     </Typography>
                 </Toolbar>
                 </AppBar>                
-                <main classes={classes.content}>
+                <main className={classes.content}>
                     <FormControl className={classes.formControl}>
                         <InputLabel htmlFor="mode-of-transport">Mode of Transport</InputLabel>
                         <Select

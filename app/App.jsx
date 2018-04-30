@@ -24,7 +24,7 @@ const styles = theme => ({
     width: '100%',
   },
   selectedItem: {
-    backgroundColor: 'rgba(0, 0, 0, 0.2)'
+    backgroundColor: theme.palette.action.selected//'rgba(0, 0, 0, 0.2)'
   },
   masterAppBar: {
     position: 'relative',
@@ -94,6 +94,12 @@ const styles = theme => ({
   stepperButton: {
     margin: theme.spacing.unit
   },
+  searchTextField: {
+    marginLeft: theme.spacing.unit,
+    marginRight: theme.spacing.unit,
+    //color: '#fff',
+    //backgroundColor: '#fff'
+  },
   searchButton: {
       position: 'absolute',
       right: '10px'
@@ -101,6 +107,9 @@ const styles = theme => ({
   formControl: {
     margin: theme.spacing.unit,
     width: '100%'
+  },
+  listItemText: {
+    padding: '0px'
   },
   selectEmpty: {
     marginTop: theme.spacing.unit * 2,
@@ -130,17 +139,12 @@ const styles = theme => ({
       display: 'block'
   },
   progress: {
-    margin: theme.spacing.unit * 2,
-    // position: 'absolute',
-    // left: "500px",
-    // top: "200px",
-    // textAlign: 'center',
-    // zIndex: 1000,
-    // opacity: 1
+    margin: theme.spacing.unit * 2    
   },
   busyDialog: {
     backgroundColor: 'transparent',
-    boxShadow: 'none'
+    boxShadow: theme.shadows[0],
+    overflow: 'hidden'
   },
   dialog: {
     width: '80%',
