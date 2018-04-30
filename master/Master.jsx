@@ -62,38 +62,38 @@ class Master extends Component {
                     </Button>
                 </Toolbar>
                 </AppBar>
-                <List component="nav">
-                    {
-                        masterData.map((vrn, i) =>
-                            <ListItem 
-                            key={i} 
-                            button 
-                            divider 
-                            onClick={this.handleListItemClick(vrn, i)} 
-                            className={i === selectedIndex ? classes.selectedItem: ""}>
-                                <ListItemIcon>
-                                    { vrn.MODEOFTRANSPORT === "CA" ? <FlightIcon color="primary" /> : 
-                                    (vrn.MODEOFTRANSPORT === "CR" ? <LocalTaxiIcon color="primary"/> : 
-                                    (vrn.MODEOFTRANSPORT === "HD" ? <DirectionsWalkIcon color="primary"/> :
-                                    (vrn.MODEOFTRANSPORT === "RB" ? <DirectionsBikeIcon color="primary"/> :
-                                    (vrn.MODEOFTRANSPORT === "RD" ? <LocalShippingIcon color="primary"/> : <WarningIcon color="primary"/>)))) }
+                <List component="nav" className={classes.scroller}>
+                {
+                    masterData.map((vrn, i) =>
+                        <ListItem 
+                        key={i} 
+                        button 
+                        divider 
+                        onClick={this.handleListItemClick(vrn, i)} 
+                        className={i === selectedIndex ? classes.selectedItem: ""}>
+                            <ListItemIcon>
+                                { vrn.MODEOFTRANSPORT === "CA" ? <FlightIcon color="primary" /> : 
+                                (vrn.MODEOFTRANSPORT === "CR" ? <LocalTaxiIcon color="primary"/> : 
+                                (vrn.MODEOFTRANSPORT === "HD" ? <DirectionsWalkIcon color="primary"/> :
+                                (vrn.MODEOFTRANSPORT === "RB" ? <DirectionsBikeIcon color="primary"/> :
+                                (vrn.MODEOFTRANSPORT === "RD" ? <LocalShippingIcon color="primary"/> : <WarningIcon color="primary"/>)))) }
+                            </ListItemIcon>
+                            <ListItemText
+                            primary={"VRN No.: " + vrn.VRN}
+                            secondary={
+                                (vrn.MODEOFTRANSPORT === "HD") ? 
+                                ("Driver Name: " + vrn.DRIVERNAME) : 
+                                ("Vehicle No.: " + vrn.VEHICLENUM)
+                            } />
+                            {
+                                vrn.VRNSTATUS === "C" &&
+                                <ListItemIcon className={classes.checkInIcon}>
+                                    <CheckCircleIcon color="primary" />
                                 </ListItemIcon>
-                                <ListItemText
-                                primary={"VRN No.: " + vrn.VRN}
-                                secondary={
-                                    (vrn.MODEOFTRANSPORT === "HD") ? 
-                                    ("Driver Name: " + vrn.DRIVERNAME) : 
-                                    ("Vehicle No.: " + vrn.VEHICLENUM)
-                                } />
-                                {
-                                    vrn.VRNSTATUS === "C" &&
-                                    <ListItemIcon className={classes.checkInIcon}>
-                                        <CheckCircleIcon color="primary" />
-                                    </ListItemIcon>
-                                }
-                            </ListItem>
-                        )
-                    }                    
+                            }
+                        </ListItem>
+                    )
+                }
                 </List>
                 <Button
                     variant="fab"
@@ -104,6 +104,7 @@ class Master extends Component {
                     onClick={() => {
                             history.push("/create");
                             this.props.handleActiveStep(0);
+                            this.props.handleDrawerToggle();
                         }
                     }
                 >

@@ -20,12 +20,12 @@ class Create extends Component {
         super(props);
         this.postVRN = this.postVRN.bind(this);
 
-        this.steps = ['Vehicle', 'Driver', 'Done'];
+        this.steps = [];
     }
 
     render() {
         const { classes, theme, activeStep, controlsVisibility, modeOfTransport } = this.props;        
-        
+        this.steps = ['Vehicle', 'Driver', 'Done'];
         if(modeOfTransport === "HD"){
             this.steps.splice(this.steps.indexOf("Vehicle"), 1);
         }
@@ -46,9 +46,8 @@ class Create extends Component {
                         VRN Create
                     </Typography>
                 </Toolbar>
-                </AppBar>
-                <main className={classes.content}>
-                    <div className={classes.toolbar} />
+                </AppBar>                
+                <main classes={classes.content}>
                     <FormControl className={classes.formControl}>
                         <InputLabel htmlFor="mode-of-transport">Mode of Transport</InputLabel>
                         <Select

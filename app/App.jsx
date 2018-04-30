@@ -51,11 +51,39 @@ const styles = theme => ({
       position: 'relative',
     },
   },
-  content: {
+  scroller: {
+    position: 'absolute',
+    overflowX: 'hidden',
+    overflowY: 'auto',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0, 
+    [theme.breakpoints.up('md')]: {
+      marginTop: theme.mixins.toolbar[theme.breakpoints.up('sm')].minHeight,
+    },
+    [theme.breakpoints.down('sm')]: {
+      marginTop: '48px',
+    },
+  },
+  content: {    
     flexGrow: 1,
     backgroundColor: theme.palette.background.default,
     padding: theme.spacing.unit * 3,
-    height: "100%"
+    position: 'absolute',
+    overflowX: 'hidden',
+    overflowY: 'auto',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    [theme.breakpoints.down('sm')]: {
+      marginTop: '48px',
+    },
+    [theme.breakpoints.up('md')]: {
+      marginTop: theme.mixins.toolbar[theme.breakpoints.up('sm')].minHeight,
+      marginLeft: `calc(${drawerWidth}px)`,
+    }
   },
   button: {
     margin: theme.spacing.unit,
@@ -919,6 +947,7 @@ class App extends Component {
     }
 
     handleInMobNo(event) {
+      var val = event.target.value;
       this.updateErrInMobNo(false);
       if(val.length <= 10){
         if(/^[0-9]+$/.test(val)){
@@ -931,6 +960,7 @@ class App extends Component {
     }
 
     handleInDriverName(event) {
+      var val = event.target.value;
       this.updateErrInDriverName(false);
       if(val.length <= 35){
         if(/^[A-Za-z0-9 ]+$/.test(val)){

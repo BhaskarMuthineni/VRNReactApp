@@ -54,9 +54,8 @@ class Detail extends Component {
                             VRN Check-In: {vrnData[0].VRN}
                         </Typography>
                     </Toolbar>
-                    </AppBar>
+                    </AppBar>                    
                     <main className={classes.content}>
-                        <div className={classes.toolbar} />
                         <FormControl className={classes.formControl} disabled>
                             <InputLabel htmlFor="name-disabled">Mode of Transport</InputLabel>
                             <Input value={vrnData[0].TrnsprtMode} name="name" id="name-disabled" />                    
@@ -351,10 +350,10 @@ class Detail extends Component {
                                 </form>
                             </div>
                         }
-                        <Button variant="raised" color="primary" className={classes.button} onClick={this.handleCheckInOut(vrnData[0])}>
-                            {vrnData[0].VRNSTATUS === "R" ? "Check-In" : (vrnData[0].VRNSTATUS === "C") ? "Check-Out": ""}
-                        </Button>
                     </main>
+                    <Button variant="raised" color="primary" className={classes.button} onClick={this.handleCheckInOut(vrnData[0])}>
+                        {vrnData[0].VRNSTATUS === "R" ? "Check-In" : (vrnData[0].VRNSTATUS === "C") ? "Check-Out": ""}
+                    </Button>
                 </div>
             );
         }
