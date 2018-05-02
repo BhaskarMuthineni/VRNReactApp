@@ -92,7 +92,7 @@ class LicenseDialog extends Component {
                     </form>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() =>this.props.handleLicenseDialogClose()} variant="raised" color="secondary">
+                    <Button onClick={() =>this.props.handleLicenseDialog()} variant="raised" color="secondary">
                         Close
                     </Button>
                     <Button onClick={this.handleLicenseSubmit} variant="raised" color="primary">
@@ -134,7 +134,7 @@ class LicenseDialog extends Component {
             };
             let path = "License";
             this.props.handleAPICall(path, "POST", 
-                () => this.props.handleLicenseDialogClose(this.props.licenseMobileNo, this.props.licenseDriverName),
+                () => this.props.handleLicenseDialog(this.props.licenseMobileNo, this.props.licenseDriverName),
                 data);
         }        
     }

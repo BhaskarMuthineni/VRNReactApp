@@ -325,7 +325,7 @@ class Create extends Component {
                             <div>
                                 <Button variant="raised" onClick={this.props.handleStepperBack} className={classes.stepperButton}>
                                     Back
-                                </Button>                                
+                                </Button>
                                 <Button variant="raised" color="secondary" onClick={() => this.postVRN() } className={classes.stepperButton}>
                                     Report-In
                                 </Button>
@@ -354,7 +354,7 @@ class Create extends Component {
                         handleLicenseRegionCode={this.props.handleLicenseRegionCode}
                         licenseRegions={this.props.licenseRegions}
                         loadLicenseRegions={this.props.loadLicenseRegions}
-                        handleLicenseDialogClose={this.props.handleLicenseDialogClose}
+                        handleLicenseDialog={this.props.handleLicenseDialog}
                         handleAPICall={this.props.handleAPICall}
                         toggleSnackBar={this.props.toggleSnackBar}
                         errValidUpto={this.props.errValidUpto}
@@ -393,6 +393,11 @@ class Create extends Component {
             this.props.handleActiveStep(this.steps.indexOf("Driver"));
             this.props.toggleSnackBar("Enter License Number");
             this.props.updateErrInLicNo(true);
+        }
+        else if(this.props.controlsVisibility["licNo"][this.props.modeOfTransport] &&
+            this.props.inLicNo !== "" && this.props.errInNewLicNo){
+            this.props.toggleSnackBar("License Details not entered");
+            this.props.handleLicenseDialog();
         }
         else if(this.props.controlsVisibility["mobNo"][this.props.modeOfTransport] &&
             this.props.inMobNo === ""){

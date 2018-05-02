@@ -6,10 +6,6 @@ body{
     margin: 0px;
 }
 
-#app, #app>div, .App-root-1, .App-root-1>div, .App-root-1>div>div, .App-root-1>div>div>div, .App-root-1>div>div>div>div,  .App-root-1>div>div>div>div>div{
+#app, #app>div{
     height: 100%;
-}
-
-.MuiDrawer-paper-39{
-    overflow: hidden !important;
 }

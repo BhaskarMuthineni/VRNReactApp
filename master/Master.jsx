@@ -4,6 +4,8 @@ import AppBar from 'material-ui/AppBar';
 import Drawer from 'material-ui/Drawer';
 import Toolbar from 'material-ui/Toolbar';
 import Typography from 'material-ui/Typography';
+import { FormLabel, FormControl, FormControlLabel, FormHelperText } from 'material-ui/Form';
+import Input, { InputLabel } from 'material-ui/Input';
 import List, { ListItem, ListItemIcon, ListItemText } from 'material-ui/List';
 import Hidden from 'material-ui/Hidden';
 import LocalShippingIcon from 'material-ui-icons/LocalShipping';
@@ -42,14 +44,15 @@ class Master extends Component {
                 }
                 {
                     search &&
-                    <TextField
-                    id="search"
-                    label="Search"
-                    className={classes.searchTextField}
-                    value={this.props.searchText}
-                    onChange={this.handleSearchText}
-                    margin="normal"
-                    />
+                    <FormControl>
+                        <InputLabel htmlFor="search" className={classes.searchLabel}>Search</InputLabel>
+                        <Input 
+                            id="search"
+                            className={classes.searchTextField}
+                            value={this.props.searchText}
+                            onChange={this.handleSearchText}
+                        />
+                    </FormControl>
                 }
                     <Button
                     variant="fab" 
@@ -169,9 +172,11 @@ class Master extends Component {
         }        
     }
 
-    handleSearch() {
+    handleSearch(event) {
         const { search } = this.props;
         this.props.handleSearchVisible(!search);
+        this.props.updateSearchText("");
+        this.props.handleMasterData(this.props.tempMasterData);
     }
 }
 

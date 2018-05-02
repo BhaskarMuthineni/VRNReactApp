@@ -18,13 +18,15 @@ const styles = theme => ({
   root: {
     flexGrow: 1,
     zIndex: 1,
+    flexWrap: 'wrap',
     overflow: 'hidden',
     position: 'relative',
     display: 'flex',
     width: '100%',
+    height: '100%'
   },
   selectedItem: {
-    backgroundColor: theme.palette.action.selected//'rgba(0, 0, 0, 0.2)'
+    backgroundColor: theme.palette.action.selected
   },
   masterAppBar: {
     position: 'relative',
@@ -49,7 +51,7 @@ const styles = theme => ({
     width: drawerWidth,
     [theme.breakpoints.up('md')]: {
       position: 'relative',
-    },
+    }
   },
   scroller: {
     position: 'absolute',
@@ -94,11 +96,12 @@ const styles = theme => ({
   stepperButton: {
     margin: theme.spacing.unit
   },
+  searchLabel: {
+    color: theme.palette.common.white
+  },
   searchTextField: {
-    marginLeft: theme.spacing.unit,
-    marginRight: theme.spacing.unit,
-    //color: '#fff',
-    //backgroundColor: '#fff'
+    color: theme.palette.common.white,
+    padding: '0px'
   },
   searchButton: {
       position: 'absolute',
@@ -240,6 +243,7 @@ class App extends Component {
             errInVehNo: false,
             errInTrans: false,
             errInLicNo: false,
+            errInNewLicNo: false,
             errInMobNo: false,
             errInDriverName: false,
             errInProofType: false,
@@ -298,7 +302,7 @@ class App extends Component {
         this.handleLicenseDriverName = this.handleLicenseDriverName.bind(this);
         this.handleLicenseMobileNo = this.handleLicenseMobileNo.bind(this);
         this.handleLicenseRegionCode = this.handleLicenseRegionCode.bind(this);
-        this.handleLicenseDialogClose = this.handleLicenseDialogClose.bind(this);
+        this.handleLicenseDialog = this.handleLicenseDialog.bind(this);
 
         this.updateErrLicValidUpto = this.updateErrLicValidUpto.bind(this);
         this.updateErrLicDriverName = this.updateErrLicDriverName.bind(this);
@@ -452,7 +456,7 @@ class App extends Component {
                                 handleLicenseRegionCode={this.handleLicenseRegionCode}
                                 licenseRegions={this.state.licenseRegions}
                                 loadLicenseRegions={this.loadLicenseRegions}
-                                handleLicenseDialogClose={this.handleLicenseDialogClose}
+                                handleLicenseDialog={this.handleLicenseDialog}
                                 errValidUpto={this.state.errValidUpto}
                                 errDriverName={this.state.errDriverName}
                                 errMobNo={this.state.errMobNo}
@@ -464,6 +468,7 @@ class App extends Component {
                                 errInVehNo={this.state.errInVehNo}
                                 errInTrans={this.state.errInTrans}
                                 errInLicNo={this.state.errInLicNo}
+                                errInNewLicNo={this.state.errInNewLicNo}
                                 errInMobNo={this.state.errInMobNo}
                                 errInDriverName={this.state.errInDriverName}
                                 errInProofType={this.state.errInProofType}
@@ -777,8 +782,23 @@ class App extends Component {
       var val = event.target.value;
       this.setState({
         modeOfTransport: val, 
-        inVehStat: (val === "RD") ? "L": "",
+        inVehStat: (val === "RD") ? "L": "",        
+        inVehNo: "",
+        inFleetType: "",
+        inFleetTypeDesc: "",
+        inTransporter: "",
+        inTransporterDesc: "",
         inSealCond: (val === "RD") ? "I": "",
+        inSeal1: "",
+        inSeal2: "",
+        inNoOfBoxes: "",
+        inLicNo: "",
+        inMobNo: "",
+        inDriverName: "",
+        inProofType: "",
+        inProofNo: "",
+        inLRNo: "",
+        inRemarks: ""
       });
     }
 
@@ -802,7 +822,7 @@ class App extends Component {
 
     handleChangeInVehNo(event) {
       this.updateErrInVehNo(false);
-      var val = event.target.value;
+      var val = event.target.value.toUpperCase();
       if(val.length <= 10){
         this.setState({inVehNo: val});
         this.inVehNoChanged = true;
@@ -934,8 +954,9 @@ class App extends Component {
               });
             }
             else{
-              that.setState({licenseDialogOpen: true});
               that.setState({
+                errInNewLicNo: true,
+                licenseDialogOpen: true,
                 inMobNo: "",
                 inDriverName: ""
               });
@@ -1053,16 +1074,18 @@ class App extends Component {
       this.setState({licenseRegionCode: event.target.value});
     }
 
-    handleLicenseDialogClose(mobNo, driverName) {
+    handleLicenseDialog(mobNo, driverName) {
+      const { licenseDialogOpen } = this.state;
       this.setState({
-        licenseDialogOpen: false,
+        licenseDialogOpen: !licenseDialogOpen,
         licenseValidUpto: "",
         licenseDriverName: "",
         licenseMobileNo: "",
         licenseRegionCode: "",
         inMobNo: (mobNo) ? mobNo: "",
-        inDriverName: (driverName) ? driverName : ""
-      });
+        inDriverName: (driverName) ? driverName : "",
+        errInNewLicNo: (mobNo && driverName) ? false : true
+      });      
     }
 
     updateErrLicValidUpto(flag) {
