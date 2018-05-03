@@ -11,9 +11,12 @@ class BusyDialog extends Component {
     render() {
         const { classes, isLoading} = this.props;
         return(
-            <Dialog classes={{
-                paper: classes.busyDialog
-                }} open={isLoading}>
+            <Dialog 
+                classes={{
+                    paper: classes.busyDialog
+                }}
+                open={isLoading}
+            >
                 <CircularProgress className={classes.progress} size={100} thickness={4} />
             </Dialog>
         );        

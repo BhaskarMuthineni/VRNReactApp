@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Dialog, { DialogActions, DialogContent, DialogTitle } from 'material-ui/Dialog';
+import Dialog, { DialogActions, DialogContent, DialogContentText, DialogTitle } from 'material-ui/Dialog';
 import Button from 'material-ui/Button';
 import history from '../history';
 
@@ -10,24 +10,39 @@ class MessageDialog extends Component {
     }    
 
     render() {
+        const { classes } = this.props;
 
         return(
             <Dialog
+                classes={{
+                    paper: classes.dlgMsg
+                }}
                 disableBackdropClick
                 disableEscapeKeyDown
                 maxWidth="xs"
-                aria-labelledby="confirmation-dialog-title"
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
                 open={this.props.open}>
-                <DialogTitle id="confirmation-dialog-title">
-                    {this.props.title}
+                <DialogTitle id="alert-dialog-title">
+                    <span 
+                        className={this.props.title === "Success" ? 
+                                    classes.dlgTitSuccess: 
+                                    (this.props.title === "Error" ? 
+                                    classes.dlgTitError : 
+                                    classes.dlgTitWarning )}
+                    >
+                        {this.props.title}
+                    </span>
                 </DialogTitle>
                 <DialogContent>
-                    <h3>{this.props.value}</h3>
+                    <DialogContentText id="alert-dialog-description">
+                        {this.props.value}
+                    </DialogContentText>
                 </DialogContent>
                 <DialogActions>
                 {
                     this.props.btns.map((btn, i) =>
-                        <Button key={i} onClick={btn.event} variant="raised" color="primary">
+                        <Button key={i} onClick={btn.event} color="primary">
                             {btn.text}
                         </Button>
                     )

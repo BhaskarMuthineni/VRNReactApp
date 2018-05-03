@@ -149,9 +149,18 @@ const styles = theme => ({
     boxShadow: theme.shadows[0],
     overflow: 'hidden'
   },
-  dialog: {
-    width: '80%',
+  dlgMsg: {
     maxHeight: 435,
+    textAlign: 'center'
+  },
+  dlgTitSuccess: {
+    color: 'green'
+  },
+  dlgTitError: {
+    color: 'red'
+  },
+  dlgTitWarning: {
+    color: 'yellow'
   },
   checkInIcon:{
     position: 'absolute',
@@ -486,10 +495,8 @@ class App extends Component {
                 </div>
             </Router>
             <BusyDialog classes={classes} isLoading={this.state.isLoading} />
-            <MessageDialog
-              classes={{
-                  paper: classes.dialog
-              }}
+            <MessageDialog              
+              classes={classes}
               handleMsgDlg={this.handleMsgDlg}              
               open={this.state.messageDialogOpen}
               title={this.state.messageDialogTitle}

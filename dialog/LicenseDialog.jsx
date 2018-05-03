@@ -92,10 +92,10 @@ class LicenseDialog extends Component {
                     </form>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() =>this.props.handleLicenseDialog()} variant="raised" color="secondary">
+                    <Button onClick={() =>this.props.handleLicenseDialog()} color="secondary">
                         Close
                     </Button>
-                    <Button onClick={this.handleLicenseSubmit} variant="raised" color="primary">
+                    <Button onClick={this.handleLicenseSubmit} color="primary">
                         Submit
                     </Button>
                 </DialogActions>

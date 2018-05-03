@@ -30,29 +30,9 @@ var config = {
                  loader: ['style-loader', 'css-loader']
             },
             {
-                 test: /\.(svg|ttf|woff|woff2|eot)$/, 
-                 loader: ['file-loader', 'url-loader']
-            }
-            // {
-            //     test: /\.woff(\?v=\d+\.\d+\.\d+)?$/,
-            //     use: 'url-loader?limit=100000&mimetype=application/font-woff',
-            // },
-            // {
-            //     test: /\.woff2(\?v=\d+\.\d+\.\d+)?$/,
-            //     use: 'url-loader?limit=100000&mimetype=application/font-woff',
-            // },
-            // {
-            //     test: /\.ttf(\?v=\d+\.\d+\.\d+)?$/,
-            //     use: 'url-loader?limit=100000&mimetype=application/octet-stream',
-            // },
-            // {
-            //     test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,
-            //     use: 'file-loader',
-            // },
-            // {
-            //     test: /\.svg(\?v=\d+\.\d+\.\d+)?$/,
-            //     use: 'url-loader?limit=100000&mimetype=image/svg+xml',
-            // },
+                  test: /\.(svg|ttf|woff|woff2|eot)$/, 
+                  loader: ['file-loader']
+             }            
         ]
     }
 

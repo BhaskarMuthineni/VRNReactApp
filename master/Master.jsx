@@ -102,12 +102,13 @@ class Master extends Component {
                     variant="fab"
                     mini
                     color="primary"
-                    aria-label="add"
+                    aria-label="create VRN"
                     className={classes.button}
                     onClick={() => {
                             history.push("/create");
                             this.props.handleActiveStep(0);
                             this.props.handleDrawerToggle();
+                            this.props.updateSelectedIndex(-1);
                         }
                     }
                 >
