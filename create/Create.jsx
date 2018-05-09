@@ -356,6 +356,7 @@ class Create extends Component {
                         loadLicenseRegions={this.props.loadLicenseRegions}
                         handleLicenseDialog={this.props.handleLicenseDialog}
                         handleAPICall={this.props.handleAPICall}
+                        handleODataCall={this.props.handleODataCall}
                         toggleSnackBar={this.props.toggleSnackBar}
                         errValidUpto={this.props.errValidUpto}
                         errDriverName={this.props.errDriverName}
@@ -446,8 +447,43 @@ class Create extends Component {
                 VRNSTATUS: (checkIn) ? "C" : "R",
                 CHECKINOUT: "I"
             };
-            let path = "VRNMaster";
-            this.props.handleAPICall(path, "POST", () => this.props.loadMasterData(), data);
+
+            var oData = {
+                Indicator: (checkIn) ? "X" : "",
+                VRNCREHRDVEHNAV: [{
+                  VehicleNum: (checkIn) ? this.props.inVehNo : "",
+                  VendorNum: (checkIn) ? this.props.inTransporter : "",
+                  FleetType: (checkIn) ? this.props.inFleetType : "",
+                }],
+                VRNHDRITEMNAV: [{
+                  CheckType: "I",
+                  Depremarks: this.props.inRemarks,
+                  Depseal: this.props.inSeal1,
+                  DriverName: this.props.inDriverName,
+                  DriverNum: this.props.inMobNo,
+                  FleetType: this.props.inFleetType,
+                  IDPrfNum: this.props.inProofNo,
+                  IDPrfType: this.props.inProofType,
+                  LRDate: "0000-00-00T00:00:00",
+                  LRNum: this.props.inLRNo,
+                  LicenceNum: this.props.inLicNo,
+                  NoHus: this.props.inNoOfBoxes,
+                  Purpose: "VEND_INB",
+                  SealCond: this.props.inSealCond,
+                  TCNNum: "",
+                  TransCode: this.props.inTransporter,
+                  Transporter: this.props.inTransporterDesc,
+                  VRNITEMDOCNAV: [{ DocType: "", DocNo: "" }],
+                  VehStatus: this.props.inVehStat,
+                  VehicleNum: this.props.inVehNo,
+                  VehicleType: this.props.modeOfTransport
+                }]
+              };
+            let path = "VRNMaster", oDataPath = "VRNCreateHdrSet", method = "POST";
+            this.props.handleAPICall(path, method, () => {
+                this.props.handleODataCall(oDataPath, method, () => {}, oData);
+                this.props.loadMasterData();                
+            }, data);
         }
     }
 }

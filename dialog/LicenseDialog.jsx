@@ -132,9 +132,19 @@ class LicenseDialog extends Component {
                 Telephone: this.props.licenseMobileNo,
                 Rg: this.props.licenseRegionCode
             };
-            let path = "License";
-            this.props.handleAPICall(path, "POST", 
-                () => this.props.handleLicenseDialog(this.props.licenseMobileNo, this.props.licenseDriverName),
+            var oData = {
+                DriverName: this.props.licenseDriverName,
+                LicenceNum: this.props.inLicNo,
+                MobileNum: this.props.licenseMobileNo,
+                RegionCode: this.props.licenseRegionCode,
+                ValidUpToDate: this.props.licenseValidUpto
+            };
+            let path = "License", oDataPath= "LicenceCreateSet", method = "POST";
+            this.props.handleAPICall(path, method, 
+                () => {
+                    this.props.handleLicenseDialog(this.props.licenseMobileNo, this.props.licenseDriverName)
+                    this.props.handleODataCall(oDataPath, method, () => {}, oData);                    
+                },
                 data);
         }        
     }
