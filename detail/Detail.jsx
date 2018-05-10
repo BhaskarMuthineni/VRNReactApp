@@ -366,15 +366,8 @@ class Detail extends Component {
         var that = this;
         return function(event) {
             if(vrn.VRNSTATUS === "R"){
-                let path = "VRNCheckIN/", oDataPath = "CheckInSet", method = "PUT";
-                var oData = {
-                    Indicator: "X",
-                    VRNNum: vrn.VRN
-                };
-                that.props.handleAPICall(path + vrn.VRN, method, () => {
-                    that.props.loadMasterData()
-                    that.props.handleODataCall(oDataPath, method, () => {}, oData);
-                });
+                let path = "VRNCheckIN/", method = "PUT";
+                that.props.handleAPICall(path + vrn.VRN, method, () => that.props.loadMasterData());
             }
             else if(vrn.VRNSTATUS === "C"){
                 if(that.props.tabValue !== 1){
@@ -393,28 +386,8 @@ class Detail extends Component {
                         VRN: vrn.VRN
                     };
 
-                    var oData = {
-                        VRNNum: vrn.VRN,
-                        VRNCREHRDITMNAV: [{
-                          CheckType: "O",
-                          DepRemarks: that.props.outPODRemarks,
-                          LRDate: "0000-00-00T00:00:00",
-                          LRNum: '',
-                          NoHus: that.props.outNoOfBoxes,
-                          Reject: "",
-                          SealCond: that.props.outSealCond,
-                          TripNum: "",
-                          VRNCREITMDOCNAV: [{ DocNum: "", DocType: "" }],
-                          VRNNum: vrn.VRN,
-                          VehicleStatus: that.props.outVehStatus
-                        }]
-                    };
-
-                    let path = "VRNCheckOUT",oDataPath = "VRNCreHdrSet", method = "POST";
-                    that.props.handleAPICall(path, method, () => {
-                        that.props.loadMasterData();
-                        that.props.handleODataCall(oDataPath, method, () => {}, oData);
-                    }, data);
+                    let path = "VRNCheckOUT", method = "POST";
+                    that.props.handleAPICall(path, method, () => that.props.loadMasterData(), data);
                 }
             }            
         }

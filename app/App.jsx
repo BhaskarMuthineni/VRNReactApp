@@ -265,7 +265,6 @@ class App extends Component {
         this.handleSearchVisible = this.handleSearchVisible.bind(this);
         this.updateSearchText = this.updateSearchText.bind(this);
         this.handleAPICall = this.handleAPICall.bind(this);
-        this.handleODataCall = this.handleODataCall.bind(this);
         this.loadMasterData = this.loadMasterData.bind(this);
         this.loadDetailData = this.loadDetailData.bind(this);
         this.loadTransportModes = this.loadTransportModes.bind(this);
@@ -375,7 +374,6 @@ class App extends Component {
                                   classes={classes}
                                   theme={theme}
                                   handleAPICall={this.handleAPICall}
-                                  handleODataCall={this.handleODataCall}
                                   loadMasterData={this.loadMasterData}
                                   handleDrawerToggle={this.handleDrawerToggle} 
                                   tabValue={this.state.tabValue} 
@@ -410,7 +408,6 @@ class App extends Component {
                                 theme={theme}
                                 controlsVisibility={this.state.controlsVisibility}
                                 handleAPICall={this.handleAPICall}
-                                handleODataCall={this.handleODataCall}
                                 loadMasterData={this.loadMasterData}
                                 handleDrawerToggle={this.handleDrawerToggle}
                                 handleMsgDlg={this.handleMsgDlg}
@@ -594,84 +591,8 @@ class App extends Component {
           }]
           this.handleMsgDlg("Error", error.message, btns);
         })
-    }    
-
-    handleODataCall(path, method, callBack, data){
-      var payload = JSON.stringify(data),
-      username = 'fiori_test3',
-      password = 'Welcome.1',
-      that = this;
-      this.setState({isLoading: true});
-      fetch(ODataUrl + path, {
-        method: method,
-        headers: {
-            'Accept':'application/json',
-            'Content-Type': 'application/json',
-            'Authorization': 'Basic ' + btoa(username + ':' + password),
-            "x-csrf-token": "Fetch"
-        },
-        body: payload
-      })
-      .then(response => {
-        if(response.ok) {
-          return response.json(); 
-        }
-        else{
-          throw new Error(response.statusText);
-        }
-      })
-      .then(data => {
-        var token = data;
-        fetch(ODataUrl + path, {
-          method: method,
-          headers: {
-              'Accept':'application/json',
-              'Content-Type': 'application/json',
-              'Authorization': 'Basic ' + btoa(username + ':' + password),
-              "X-CSRF-Token": token,
-          },
-          body: payload
-        })
-        .then(response => {
-          if(response.ok) {
-            return response.json(); 
-          }
-          else{
-            throw new Error(response.statusText);
-          }
-        })
-        .then(data => {
-          that.setState({isLoading: false});
-          if(Array.isArray(data)){
-            callBack(data);
-          }
-          else if(typeof data === "object" && data.message !== undefined){
-            var btns = [{
-                text: "Ok",
-                event: () => {
-                  if(data.msgCode === "S"){
-                    callBack();
-                  }
-                  that.handleMsgDlg()                 
-                }
-            }];
-            that.handleMsgDlg(that.getTitle(data.msgCode), data.message, btns);
-          }          
-        })
-        .catch(error => {
-          that.setState({error, isLoading: false});
-          var btns = [{
-            text: 'Ok',
-            event: () => that.handleMsgDlg()
-          }]
-          that.handleMsgDlg("Error", error.message, btns);
-        })
-      })
-      .catch(error => {
-        console.log(error);
-      })      
     }
-
+    
     loadMasterData(){
       let that = this;
       history.push("");
