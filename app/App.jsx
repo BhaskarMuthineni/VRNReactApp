@@ -1048,7 +1048,7 @@ class App extends Component {
 
     handleLicenseValidUpto(event) {
       this.updateErrLicValidUpto(false);
-      this.setState({licenseValidUpto: event.target.value + "T00:00:00"});
+      this.setState({licenseValidUpto: event.target.value});
     }
   
     handleLicenseDriverName(event) {
