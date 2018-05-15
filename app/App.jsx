@@ -958,7 +958,8 @@ class App extends Component {
             if(data.length > 0){
               that.setState({
                 inMobNo: data[0].Telephone,
-                inDriverName: data[0].Lastname
+                inDriverName: data[0].Lastname,
+                errInNewLicNo: false
               });
             }
             else{
